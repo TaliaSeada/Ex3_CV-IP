@@ -87,7 +87,27 @@ def opticalFlowPyrLK(img1: np.ndarray, img2: np.ndarray, k: int,
     :return: A 3d array, with a shape of (m, n, 2),
     where the first channel holds U, and the second V.
     """
-    pass
+    im1_pyramids = gaussianPyr(img1, k)
+    im2_pyramids = gaussianPyr(img2, k)
+
+    p = []
+    v = []
+    points, vectors = opticalFlow(im1_pyramids[-1], im2_pyramids[-1], stepSize, winSize)
+    p.append(points)
+    v.append(vectors)
+
+    im1_pyramids.reverse()
+    im2_pyramids.reverse()
+
+    for i in range(k):
+        points, vectors = opticalFlow(im1_pyramids[i], im2_pyramids[i], stepSize, winSize)
+        p.append(points)
+        v.append(vectors)
+
+        U = points * 2 + p[i-1]
+        V = vectors * 2 + v[i-1]
+
+    return np.ndarray(U, V, 2)
 
 
 # ---------------------------------------------------------------------------
@@ -155,7 +175,17 @@ def gaussianPyr(img: np.ndarray, levels: int = 4) -> List[np.ndarray]:
     :param levels: Pyramid depth
     :return: Gaussian pyramid (list of images)
     """
-    pass
+    pyrs = [img]
+    k_size = 5
+    sigma = 0.3*((k_size-1)*0.5-1) + 0.8
+    gauss_ker = cv2.getGaussianKernel(k_size, sigma)
+
+    for i in range(levels):
+        img = cv2.filter2D(img, -1, gauss_ker, borderType=cv2.BORDER_REPLICATE)
+        img = img[::2, ::2]
+        pyrs.append(img)
+
+    return pyrs
 
 
 def laplaceianReduce(img: np.ndarray, levels: int = 4) -> List[np.ndarray]:
@@ -165,7 +195,18 @@ def laplaceianReduce(img: np.ndarray, levels: int = 4) -> List[np.ndarray]:
     :param levels: Pyramid depth
     :return: Laplacian Pyramid (list of images)
     """
-    pass
+    pyrs = [img]
+    k_size = 5
+    sigma = 0.3 * ((k_size - 1) * 0.5 - 1) + 0.8
+    gauss_ker = cv2.getGaussianKernel(k_size, sigma)
+    gaussPyr = gaussianPyr(img, levels)
+
+    for i in range(levels):
+        img = cv2.filter2D(img, -1, gauss_ker, borderType=cv2.BORDER_REPLICATE)
+        img = img[::2, ::2]
+        pyrs.append(img)
+
+    return pyrs
 
 
 def laplaceianExpand(lap_pyr: List[np.ndarray]) -> np.ndarray:
