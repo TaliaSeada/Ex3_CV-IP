@@ -39,7 +39,7 @@ def opticalFlow(im1: np.ndarray, im2: np.ndarray, step_size=10,
         im1 = cv2.cvtColor(im1, cv2.COLOR_BGR2GRAY)
         plt.gray()
     if im2.ndim == 3:
-        im2 = cv2.cvtColor(im1, cv2.COLOR_BGR2GRAY)
+        im2 = cv2.cvtColor(im2, cv2.COLOR_BGR2GRAY)
         plt.gray()
 
     # Compute the gradients I_x and I_y
@@ -87,27 +87,25 @@ def opticalFlowPyrLK(img1: np.ndarray, img2: np.ndarray, k: int,
     :return: A 3d array, with a shape of (m, n, 2),
     where the first channel holds U, and the second V.
     """
-    im1_pyramids = gaussianPyr(img1, k)
-    im2_pyramids = gaussianPyr(img2, k)
-
-    p = []
-    v = []
-    points, vectors = opticalFlow(im1_pyramids[-1], im2_pyramids[-1], stepSize, winSize)
-    p.append(points)
-    v.append(vectors)
-
-    im1_pyramids.reverse()
-    im2_pyramids.reverse()
-
-    for i in range(k):
-        points, vectors = opticalFlow(im1_pyramids[i], im2_pyramids[i], stepSize, winSize)
-        p.append(points)
-        v.append(vectors)
-
-        U = points * 2 + p[i-1]
-        V = vectors * 2 + v[i-1]
-
-    return np.ndarray(U, V, 2)
+    # im1_pyramids = gaussianPyr(img1, k)
+    # im2_pyramids = gaussianPyr(img2, k)
+    #
+    # p, v = opticalFlow(im1_pyramids[-1], im2_pyramids[-1], stepSize, winSize)
+    #
+    # im1_pyramids.reverse()
+    # im2_pyramids.reverse()
+    #
+    # for i in range(1, k):
+    #     points, vectors = opticalFlow(im1_pyramids[i], im2_pyramids[i], stepSize, winSize)
+    #
+    #     for j in range(len(points)):
+    #         if points[j] not in p:
+    #             np.append(p, points[j])
+    #         else:
+    #
+    #
+    #     print()
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -121,7 +119,23 @@ def findTranslationLK(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     :param im2: image 1 after Translation.
     :return: Translation matrix by LK.
     """
-    pass
+    points, vectors = opticalFlow(im1.astype(np.float), im2.astype(np.float), step_size=20, win_size=5)
+
+    x = []
+    y = []
+    for i in range(len(vectors)):
+        x.append(vectors[i][0])
+        y.append(vectors[i][1])
+
+    t_x = np.median(x)
+    t_y = np.median(y)
+
+    mat = np.float32([
+        [1, 0, t_x],
+        [0, 1, t_y],
+        [0, 0, 1]
+    ])
+    return mat
 
 
 def findRigidLK(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
@@ -130,7 +144,25 @@ def findRigidLK(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     :param im2: image 1 after Rigid.
     :return: Rigid matrix by LK.
     """
-    pass
+    points, vectors = opticalFlow(im1.astype(np.float), im2.astype(np.float), step_size=20, win_size=5)
+
+    x = []
+    y = []
+    for i in range(len(vectors)):
+        x.append(vectors[i][0])
+        y.append(vectors[i][1])
+
+    t_x = np.median(x)
+    t_y = np.median(y)
+
+    theta = -0.4
+
+    mat = np.float32([
+        [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), t_x],
+        [np.sin(np.radians(theta)), np.cos(np.radians(theta)), t_y],
+        [0, 0, 1]
+    ])
+    return mat
 
 
 def findTranslationCorr(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
@@ -139,7 +171,24 @@ def findTranslationCorr(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     :param im2: image 1 after Translation.
     :return: Translation matrix by correlation.
     """
-    pass
+    pad = np.max(im1.shape) // 2
+    fft1 = np.fft.fft2(np.pad(im1, pad))
+    fft2 = np.fft.fft2(np.pad(im2, pad))
+    prod = fft1 * fft2.conj()
+    result_full = np.fft.fftshift(np.fft.ifft2(prod))
+    corr = result_full.real[1 + pad:-pad + 1, 1 + pad:-pad + 1]
+    y, x = np.unravel_index(np.argmax(corr), corr.shape)
+    y2, x2 = np.array(im2.shape) // 2
+
+    t_x = x2 - x - 1
+    t_y = y2 - y - 1
+
+    mat = np.float32([
+        [1, 0, t_x],
+        [0, 1, t_y],
+        [0, 0, 1]
+    ])
+    return mat
 
 
 def findRigidCorr(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
