@@ -70,44 +70,6 @@ def displayOpticalFlow(img: np.ndarray, pts: np.ndarray, uvs: np.ndarray):
 # ---------------------------------------------------------------------------
 # ------------------------ Image Alignment & Warping ------------------------
 # ---------------------------------------------------------------------------
-def Rotation(img, alpha):
-    (h, w, c) = img.shape
-    # alpha = -30
-    tx, ty = w//2, h//2
-
-    T = np.array([
-        [1, 0, tx],
-        [0, 1, ty],
-        [0, 0, 1]
-    ])
-
-    M = np.array([
-        [np.cos(np.radians(alpha)), -np.sin(np.radians(alpha)), 0],
-        [np.sin(np.radians(alpha)), np.cos(np.radians(alpha)), 0],
-        [0, 0, 1]
-    ])
-
-    translation_M = T @ M @ (np.linalg.inv(T))
-
-    X, Y = np.meshgrid(range(w), range(h))
-
-    I_new = np.array([X.flatten(), Y.flatten(), np.ones_like(X.flatten())])
-
-    I_old = translation_M @ I_new
-
-    # to avoid out of range indexes
-    I_old[0, :] = np.mod(I_old[0, :], w)
-    I_old[1, :] = np.mod(I_old[1, :], h)
-
-    # padding
-    img_pad = np.zeros((h * 4, w * 4, 3))
-    img_pad[ty:ty * 3 + 1, tx:tx * 3 + 1, :] = img
-
-    new_img = img[I_old[1, :].astype(int), I_old[0, :].astype(int), :]
-    new_img = new_img.reshape((h, w, -1))
-
-    return new_img
-
 
 def MSE(a: np.ndarray, b: np.ndarray) -> float:
     return np.square(a - b).mean()
