@@ -42,10 +42,12 @@ def hierarchicalkDemo(img_path):
                   [0, 0, 1]], dtype=np.float)
     img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
     st = time.time()
-    pts, uv = opticalFlowPyrLK(img_1.astype(np.float), img_2.astype(np.float), 4, stepSize=20, winSize=5)
+    res = opticalFlowPyrLK(img_1.astype(np.float), img_2.astype(np.float), 4, stepSize=20, winSize=5)
+    pts, uv = opticalFlow(img_1.astype(np.float), img_2.astype(np.float), step_size=20, win_size=5)
     et = time.time()
     print("Time: {:.4f}".format(et - st))
-    displayOpticalFlow(img_2, pts, uv)
+    print(res)
+
 
 
 def compareLK(img_path):
@@ -108,6 +110,7 @@ def transCorr(img):
     # cv2.imshow("translation with mine", shifted2)
     # cv2.waitKey(0)
 
+
 def rigidLK(img):
     theta = -0.4
     t_x = -.2
@@ -120,6 +123,26 @@ def rigidLK(img):
     shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
     print("RigidLk")
     mat = findRigidLK(img, shifted1)
+    shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
+    print("MSE:", MSE(shifted1, shifted2))
+    print(mat)
+    cv2.imshow("rigid with given", shifted1)
+    cv2.imshow("rigid with mine", shifted2)
+    cv2.waitKey(0)
+
+
+def rigidCorr(img):
+    theta = -0.4
+    t_x = -.2
+    t_y = -.1
+    t = np.float32([
+        [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), t_x],
+        [np.sin(np.radians(theta)), np.cos(np.radians(theta)), t_y],
+        [0, 0, 1]
+    ])
+    shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
+    print("RigidCorr")
+    mat = findRigidCorr(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
     print("MSE:", MSE(shifted1, shifted2))
     print(mat)
@@ -218,11 +241,11 @@ def main():
     print("ID:", myID())
 
     img_path = 'input/boxMan.jpg'
-    # lkDemo(img_path)
-    # hierarchicalkDemo(img_path)
+    lkDemo(img_path)
+    hierarchicalkDemo(img_path)
     # compareLK(img_path)
     #
-    imageWarpingDemo(img_path)
+    # imageWarpingDemo(img_path)
     #
     # pyrGaussianDemo('input/pyr_bit.jpg')
     # pyrLaplacianDemo('input/pyr_bit.jpg')

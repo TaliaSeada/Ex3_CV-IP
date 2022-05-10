@@ -34,44 +34,36 @@ def opticalFlow(im1: np.ndarray, im2: np.ndarray, step_size=10,
     x_y = []
     u_v = []
 
-    # convert to GRAY scale
-    if im1.ndim == 3:
-        im1 = cv2.cvtColor(im1, cv2.COLOR_BGR2GRAY)
-        plt.gray()
-    if im2.ndim == 3:
-        im2 = cv2.cvtColor(im2, cv2.COLOR_BGR2GRAY)
-        plt.gray()
-
     # Compute the gradients I_x and I_y
-    ker = np.array([[1, 0, -1]])
+    ker = np.array([[-1, 0, 1]])
     Ix = cv2.filter2D(im2, -1, ker, borderType=cv2.BORDER_REPLICATE)
     Iy = cv2.filter2D(im2, -1, ker.T, borderType=cv2.BORDER_REPLICATE)
     It = im2 - im1
 
-    for i in range(0, im1.shape[0] - win_size, step_size):
-        for j in range(0, im1.shape[1] - win_size, step_size):
+    w = win_size // 2
+    for i in range(w, im1.shape[0] - w + 1, step_size):
+        for j in range(w, im1.shape[1] - w + 1, step_size):
             # take the window
-            Ix_cut = Ix[i:i + win_size, j:j + win_size].flatten()
-            Iy_cut = Iy[i:i + win_size, j:j + win_size].flatten()
-            It_cut = It[i:i + win_size, j:j + win_size].flatten()
+            Ix_cut = Ix[i - w:i + w, j - w:j + w].flatten()
+            Iy_cut = Iy[i - w:i + w, j - w:j + w].flatten()
+            It_cut = It[i - w:i + w, j - w:j + w].flatten()
 
-            # create A and b
-            A = np.array([Ix_cut, Iy_cut]).T
-            b = It_cut.T
-
-            # calculate v
-            AtA = A.T.dot(A)
-            AtA_inv = np.linalg.inv(AtA)
-            u, v = AtA_inv.dot(A.T.dot(b))
+            AtA = [[(Ix_cut * Ix_cut).sum(), (Ix_cut * Iy_cut).sum()],
+                   [(Ix_cut * Iy_cut).sum(), (Iy_cut * Iy_cut).sum()]]
 
             # calculate the eigenvalues
             e1, e2 = np.linalg.eigvals(AtA)
             eig_max = max(e1, e2)
             eig_min = min(e1, e2)
 
-            if eig_max / eig_min < 100 and eig_min > 1:
-                x_y.append([j, i])
-                u_v.append([u, v])
+            if eig_max / eig_min >= 100 or eig_min <= 1:
+                continue
+
+            # calculate v
+            Atb = [[-(Ix_cut * It_cut).sum()], [-(Iy_cut * It_cut).sum()]]
+            u, v = np.linalg.inv(AtA) @ Atb
+            x_y.append([j, i])
+            u_v.append([u, v])
 
     return np.array(x_y), np.array(u_v)
 
@@ -87,25 +79,46 @@ def opticalFlowPyrLK(img1: np.ndarray, img2: np.ndarray, k: int,
     :return: A 3d array, with a shape of (m, n, 2),
     where the first channel holds U, and the second V.
     """
-    # im1_pyramids = gaussianPyr(img1, k)
-    # im2_pyramids = gaussianPyr(img2, k)
-    #
-    # p, v = opticalFlow(im1_pyramids[-1], im2_pyramids[-1], stepSize, winSize)
-    #
-    # im1_pyramids.reverse()
-    # im2_pyramids.reverse()
-    #
-    # for i in range(1, k):
-    #     points, vectors = opticalFlow(im1_pyramids[i], im2_pyramids[i], stepSize, winSize)
-    #
-    #     for j in range(len(points)):
-    #         if points[j] not in p:
-    #             np.append(p, points[j])
-    #         else:
-    #
-    #
-    #     print()
-    pass
+
+    # list of pyrimids Gaussian
+    img1_GS_pyrimids = gaussianPyr(img1, k)
+    img2_GS_pyrimids = gaussianPyr(img2, k)
+
+    top_img_1 = img1_GS_pyrimids[k - 1]
+    top_img_2 = img2_GS_pyrimids[k - 1]
+
+    _, du_dv = opticalFlow(top_img_1, top_img_2, stepSize, winSize)
+
+    us = []
+    vs = []
+
+    for i in du_dv:
+        us.append(i[0])
+        vs.append(i[1])
+
+    for i in range(k - 2, 0, -1):
+        img_1 = img1_GS_pyrimids[i]
+        img_2 = img2_GS_pyrimids[i]
+
+        _, temp = opticalFlow(img_1, img_2, stepSize, winSize)
+
+        us_temp = []
+        vs_temp = []
+
+        for j in temp:
+            us_temp.append(j[0])
+            vs_temp.append(j[1])
+
+        us = us * 2 + us_temp
+        vs = vs * 2 + vs_temp
+
+    twos = []
+    for i in range(len(vs)):
+        twos.append(2)
+
+    result = np.array((us, vs, twos), dtype=float)
+
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -226,7 +239,7 @@ def gaussianPyr(img: np.ndarray, levels: int = 4) -> List[np.ndarray]:
     """
     pyrs = [img]
     k_size = 5
-    sigma = 0.3*((k_size-1)*0.5-1) + 0.8
+    sigma = 0.3 * ((k_size - 1) * 0.5 - 1) + 0.8
     gauss_ker = cv2.getGaussianKernel(k_size, sigma)
 
     for i in range(levels):
