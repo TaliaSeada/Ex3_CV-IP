@@ -89,9 +89,9 @@ def transLK(img):
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
     print("MSE:", MSE(shifted1, shifted2))
     print(mat)
-    # cv2.imshow("translation with given", shifted1)
-    # cv2.imshow("translation with mine", shifted2)
-    # cv2.waitKey(0)
+    cv2.imshow("translation with given", shifted1)
+    cv2.imshow("translation with mine", shifted2)
+    cv2.waitKey(0)
 
 
 def transCorr(img):
@@ -112,9 +112,9 @@ def transCorr(img):
 
 
 def rigidLK(img):
-    theta = -0.4
-    t_x = -.2
-    t_y = -.1
+    theta = 30
+    t_x = -6
+    t_y = -70
     t = np.float32([
         [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), t_x],
         [np.sin(np.radians(theta)), np.cos(np.radians(theta)), t_y],
@@ -160,10 +160,10 @@ def imageWarpingDemo(img_path):
     print("Image Warping Demo")
     img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
     img = cv2.resize(img, (0, 0), fx=.5, fy=.5)
-    # Translation
+    ## Translation
     # transLK(img)
     # transCorr(img)
-    # Rigid
+    ## Rigid
     rigidLK(img)
     # rigidCorr(img)
 
@@ -241,11 +241,11 @@ def main():
     print("ID:", myID())
 
     img_path = 'input/boxMan.jpg'
-    lkDemo(img_path)
-    hierarchicalkDemo(img_path)
+    # lkDemo(img_path)
+    # hierarchicalkDemo(img_path)
     # compareLK(img_path)
     #
-    # imageWarpingDemo(img_path)
+    imageWarpingDemo(img_path)
     #
     # pyrGaussianDemo('input/pyr_bit.jpg')
     # pyrLaplacianDemo('input/pyr_bit.jpg')
