@@ -1,3 +1,4 @@
+import math
 import sys
 from typing import List
 
@@ -204,13 +205,84 @@ def findTranslationCorr(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     return mat
 
 
+def rotate_im(img, alpha):
+    (h, w) = img.shape
+    tx, ty = w // 2, h // 2
+
+    T = np.array([
+        [1, 0, tx],
+        [0, 1, ty],
+        [0, 0, 1]
+    ])
+
+    M = np.array([
+        [np.cos(np.radians(alpha)), -np.sin(np.radians(alpha)), 0],
+        [np.sin(np.radians(alpha)), np.cos(np.radians(alpha)), 0],
+        [0, 0, 1]
+    ])
+
+    translation_M = T @ M @ (np.linalg.inv(T))
+    img_2 = cv2.warpPerspective(img, translation_M, img.shape[::-1])
+    return img_2
+
+
 def findRigidCorr(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     """
     :param im1: input image 1 in grayscale format.
     :param im2: image 1 after Rigid.
     :return: Rigid matrix by correlation.
     """
-    pass
+    pad = np.max(im1.shape) // 2
+    fft1 = np.fft.fft2(np.pad(im1, pad))
+    fft2 = np.fft.fft2(np.pad(im2, pad))
+    prod = fft1 * fft2.conj()
+    result_full = np.fft.fftshift(np.fft.ifft2(prod))
+    corr = result_full.real[1 + pad:-pad + 1, 1 + pad:-pad + 1]
+    y, x = np.unravel_index(np.argmax(corr), corr.shape)
+    y2, x2 = np.array(im2.shape) // 2
+
+    fig, (ax_img1, ax_img2, ax_corr) = plt.subplots(1, 3, figsize=(15, 5))
+    im = ax_img1.imshow(im1, cmap='gray')
+    ax_img1.set_title('img1')
+    ax_img2.imshow(im2, cmap='gray')
+    ax_img2.set_title('img2')
+    im = ax_corr.imshow(corr, cmap='viridis')
+    ax_corr.set_title('Cross-correlation')
+    ax_img1.plot(x, y, 'ro')
+    ax_img2.plot(x2, y2, 'go')
+    ax_corr.plot(x, y, 'ro')
+    fig.show()
+
+    theta = find_ang((x2, y2), (x, y))
+    rotate = rotate_im(im2, -theta)
+    # cv2.imshow("rigid with mine", rotate)
+    # cv2.waitKey(0)
+
+    pad = np.max(im1.shape) // 2
+    fft1 = np.fft.fft2(np.pad(im1, pad))
+    fft2 = np.fft.fft2(np.pad(rotate, pad))
+    prod = fft1 * fft2.conj()
+    result_full = np.fft.fftshift(np.fft.ifft2(prod))
+    corr = result_full.real[1 + pad:-pad + 1, 1 + pad:-pad + 1]
+    y, x = np.unravel_index(np.argmax(corr), corr.shape)
+    y2, x2 = np.array(rotate.shape) // 2
+
+    t_x = x2 - x - 1
+    t_y = y2 - y - 1
+
+    mat = np.float32([
+        [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), t_x],
+        [np.sin(np.radians(theta)), np.cos(np.radians(theta)), t_y],
+        [0, 0, 1]
+    ])
+
+    return mat
+
+
+def find_ang(p1, p2):
+    ang1 = np.arctan2(*p1[::-1])
+    ang2 = np.arctan2(*p2[::-1])
+    return np.rad2deg((ang1 - ang2) % (2 * np.pi))
 
 
 def warpImages(im1: np.ndarray, im2: np.ndarray, T: np.ndarray) -> np.ndarray:
