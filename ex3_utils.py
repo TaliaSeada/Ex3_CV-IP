@@ -205,27 +205,6 @@ def findTranslationCorr(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     return mat
 
 
-def rotate_im(img, alpha):
-    (h, w) = img.shape
-    tx, ty = w // 2, h // 2
-
-    T = np.array([
-        [1, 0, tx],
-        [0, 1, ty],
-        [0, 0, 1]
-    ])
-
-    M = np.array([
-        [np.cos(np.radians(alpha)), -np.sin(np.radians(alpha)), 0],
-        [np.sin(np.radians(alpha)), np.cos(np.radians(alpha)), 0],
-        [0, 0, 1]
-    ])
-
-    translation_M = T @ M @ (np.linalg.inv(T))
-    img_2 = cv2.warpPerspective(img, translation_M, img.shape[::-1])
-    return img_2
-
-
 def findRigidCorr(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     """
     :param im1: input image 1 in grayscale format.
@@ -254,9 +233,13 @@ def findRigidCorr(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     fig.show()
 
     theta = find_ang((x2, y2), (x, y))
-    rotate = rotate_im(im2, -theta)
-    # cv2.imshow("rigid with mine", rotate)
-    # cv2.waitKey(0)
+    mat = np.float32([
+        [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), 0],
+        [np.sin(np.radians(theta)), np.cos(np.radians(theta)), 0],
+        [0, 0, 1]
+    ])
+    mat = np.linalg.inv(mat)
+    rotate = cv2.warpPerspective(im2, mat, im2.shape[::-1])
 
     pad = np.max(im1.shape) // 2
     fft1 = np.fft.fft2(np.pad(im1, pad))
@@ -277,7 +260,6 @@ def findRigidCorr(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     ])
 
     return mat
-
 
 def find_ang(p1, p2):
     ang1 = np.arctan2(*p1[::-1])

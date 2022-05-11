@@ -132,42 +132,23 @@ def rigidLK(img):
 
 
 def rigidCorr(img):
-    # from Rotation.py (moodle)
-    alpha = 20
-    t_x = 20
-    t_y = 25
-
-    t = np.array([[1, 0, t_x],
-                  [0, 1, t_y],
-                  [0, 0, 1]], dtype=np.float)
-
-    img_2 = cv2.warpPerspective(img, t, img.shape[::-1])
-    img_2 = rotate_im(img_2, alpha)
-
-    mat = findRigidCorr(img, img_2)
+    theta = 20
+    t_x = 70
+    t_y = 26
+    t = np.float32([
+        [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), t_x],
+        [np.sin(np.radians(theta)), np.cos(np.radians(theta)), t_y],
+        [0, 0, 1]
+    ])
+    shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
+    print("RigidCorr")
+    mat = findRigidCorr(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
-
-    print("MSE:", MSE(img_2, shifted2))
+    print("MSE:", MSE(shifted1, shifted2))
     print(mat)
-    cv2.imshow("rigid with given", img_2)
+    cv2.imshow("rigid with given", shifted1)
     cv2.imshow("rigid with mine", shifted2)
     cv2.waitKey(0)
-
-    # theta = 20
-    # t = np.float32([
-    #     [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), t_x],
-    #     [np.sin(np.radians(theta)), np.cos(np.radians(theta)), t_y],
-    #     [0, 0, 1]
-    # ])
-    # shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
-    # print("RigidCorr")
-    # mat = findRigidCorr(img, shifted1)
-    # shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
-    # print("MSE:", MSE(shifted1, shifted2))
-    # print(mat)
-    # cv2.imshow("rigid with given", shifted1)
-    # cv2.imshow("rigid with mine", shifted2)
-    # cv2.waitKey(0)
 
 
 def imageWarpingDemo(img_path):
