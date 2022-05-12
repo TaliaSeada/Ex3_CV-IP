@@ -7,6 +7,8 @@ import cv2
 from numpy.linalg import LinAlgError
 import matplotlib.pyplot as plt
 
+from ex3_main import displayOpticalFlow
+
 
 def myID() -> np.int:
     """
@@ -69,6 +71,7 @@ def opticalFlow(im1: np.ndarray, im2: np.ndarray, step_size=10,
     return np.array(x_y), np.array(u_v)
 
 
+# TODO
 def opticalFlowPyrLK(img1: np.ndarray, img2: np.ndarray, k: int,
                      stepSize: int, winSize: int) -> np.ndarray:
     """
@@ -81,45 +84,46 @@ def opticalFlowPyrLK(img1: np.ndarray, img2: np.ndarray, k: int,
     where the first channel holds U, and the second V.
     """
 
-    # list of pyrimids Gaussian
-    img1_GS_pyrimids = gaussianPyr(img1, k)
-    img2_GS_pyrimids = gaussianPyr(img2, k)
-
-    top_img_1 = img1_GS_pyrimids[k - 1]
-    top_img_2 = img2_GS_pyrimids[k - 1]
-
-    _, du_dv = opticalFlow(top_img_1, top_img_2, stepSize, winSize)
-
-    us = []
-    vs = []
-
-    for i in du_dv:
-        us.append(i[0])
-        vs.append(i[1])
-
-    for i in range(k - 2, 0, -1):
-        img_1 = img1_GS_pyrimids[i]
-        img_2 = img2_GS_pyrimids[i]
-
-        _, temp = opticalFlow(img_1, img_2, stepSize, winSize)
-
-        us_temp = []
-        vs_temp = []
-
-        for j in temp:
-            us_temp.append(j[0])
-            vs_temp.append(j[1])
-
-        us = us * 2 + us_temp
-        vs = vs * 2 + vs_temp
-
-    twos = []
-    for i in range(len(vs)):
-        twos.append(2)
-
-    result = np.array((us, vs, twos), dtype=float)
-
-    return result
+    # # list of pyrimids Gaussian
+    # img1_GS_pyrimids = gaussianPyr(img1, k)
+    # img2_GS_pyrimids = gaussianPyr(img2, k)
+    #
+    # top_img_1 = img1_GS_pyrimids[k - 1]
+    # top_img_2 = img2_GS_pyrimids[k - 1]
+    #
+    # _, du_dv = opticalFlow(top_img_1, top_img_2, stepSize, winSize)
+    #
+    # us = []
+    # vs = []
+    #
+    # for i in du_dv:
+    #     us.append(i[0])
+    #     vs.append(i[1])
+    #
+    # for i in range(k - 2, 0, -1):
+    #     img_1 = img1_GS_pyrimids[i]
+    #     img_2 = img2_GS_pyrimids[i]
+    #
+    #     _, temp = opticalFlow(img_1, img_2, stepSize, winSize)
+    #
+    #     us_temp = []
+    #     vs_temp = []
+    #
+    #     for j in temp:
+    #         us_temp.append(j[0])
+    #         vs_temp.append(j[1])
+    #
+    #     us = us * 2 + us_temp
+    #     vs = vs * 2 + vs_temp
+    #
+    # twos = []
+    # for i in range(len(vs)):
+    #     twos.append(2)
+    #
+    # result = np.array((us, vs, twos), dtype=float)
+    #
+    # return result
+    pass
 
 
 # ---------------------------------------------------------------------------
@@ -152,14 +156,27 @@ def findTranslationLK(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     return mat
 
 
+# TODO
 def findRigidLK(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     """
     :param im1: input image 1 in grayscale format.
     :param im2: image 1 after Rigid.
     :return: Rigid matrix by LK.
     """
-    points, vectors = opticalFlow(im1.astype(np.float), im2.astype(np.float), step_size=20, win_size=5)
+    theta = 30
+    mat = np.float32([
+        [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), 0],
+        [np.sin(np.radians(theta)), np.cos(np.radians(theta)), 0],
+        [0, 0, 1]
+    ])
+    mat = np.linalg.inv(mat)
+    rotate = cv2.warpPerspective(im2, mat, im2.shape[::-1])
 
+    # cv2.imshow("rigid with mine", rotate)
+    # cv2.waitKey(0)
+    # need to find the theta and then rotate the image back then activate the optical flow function
+    points, vectors = opticalFlow(im1.astype(np.float), rotate.astype(np.float), step_size=20, win_size=5)
+    # displayOpticalFlow(rotate, points, vectors)
     x = []
     y = []
     for i in range(len(vectors)):
@@ -168,8 +185,6 @@ def findRigidLK(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
 
     t_x = np.median(x)
     t_y = np.median(y)
-
-    theta = -0.4
 
     mat = np.float32([
         [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), t_x],
@@ -193,6 +208,18 @@ def findTranslationCorr(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     corr = result_full.real[1 + pad:-pad + 1, 1 + pad:-pad + 1]
     y, x = np.unravel_index(np.argmax(corr), corr.shape)
     y2, x2 = np.array(im2.shape) // 2
+
+    fig, (ax_img1, ax_img2, ax_corr) = plt.subplots(1, 3, figsize=(15, 5))
+    im = ax_img1.imshow(im1, cmap='gray')
+    ax_img1.set_title('img1')
+    ax_img2.imshow(im2, cmap='gray')
+    ax_img2.set_title('img2')
+    im = ax_corr.imshow(corr, cmap='viridis')
+    ax_corr.set_title('Cross-correlation')
+    ax_img1.plot(x, y, 'ro')
+    ax_img2.plot(x2, y2, 'go')
+    ax_corr.plot(x, y, 'ro')
+    fig.show()
 
     t_x = x2 - x - 1
     t_y = y2 - y - 1
@@ -261,6 +288,7 @@ def findRigidCorr(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
 
     return mat
 
+
 def find_ang(p1, p2):
     ang1 = np.arctan2(*p1[::-1])
     ang2 = np.arctan2(*p2[::-1])
@@ -276,7 +304,31 @@ def warpImages(im1: np.ndarray, im2: np.ndarray, T: np.ndarray) -> np.ndarray:
     :return: warp image 2 according to T and display both image1
     and the wrapped version of the image2 in the same figure.
     """
-    pass
+    plt.gray()
+    f, ax = plt.subplots(1, 2)
+    ax[0].set_title("im1")
+    ax[1].set_title("im2")
+    ax[0].imshow(im1)
+    ax[1].imshow(im2)
+    plt.show()
+
+    T = np.linalg.inv(T)
+    # https://docs.opencv.org/4.x/da/d54/group__imgproc__transform.html#gaf73673a7e8e18ec6963e3774e6a94b87
+    for i in range(im2.shape[0]-1):
+        for j in range(im2.shape[1]-1):
+            x = (T[0][0] * i + T[0][1] * j + T[0][2]) / (T[2][0] * i + T[2][1] * j + T[2][2])
+            y = (T[1][0] * i + T[1][1] * j + T[1][2]) / (T[2][0] * i + T[2][1] * j + T[2][2])
+            # calculate the percentage to take from each pixel
+            a = x - np.floor(x)
+            b = y - np.floor(y)
+            # formula from lecture
+            if a != 0 or b != 0:
+                im2[i][j] = (1 - a) * (1 - b) * im1[i][j] + a * (1 - b) * im1[i + 1][j] + a * b * im1[i + 1][j + 1] + \
+                            (1 - a) * b * im1[i][j + 1]
+            else:
+                im2[i][j] = im1[int(x)][int(y)]
+
+    return im2
 
 
 # ---------------------------------------------------------------------------

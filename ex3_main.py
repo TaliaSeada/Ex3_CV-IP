@@ -1,7 +1,10 @@
+import matplotlib.pyplot as plt
 import numpy as np
 
 from ex3_utils import *
 import time
+import warnings
+warnings.filterwarnings('ignore')
 
 
 # ---------------------------------------------------------------------------
@@ -28,28 +31,17 @@ def lkDemo(img_path):
     displayOpticalFlow(img_2, pts, uv)
 
 
+# TODO
 def hierarchicalkDemo(img_path):
     """
     ADD TEST
     :param img_path: Image input
     :return:
     """
-    print("Hierarchical LK Demo")
-    img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
-    img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
-    t = np.array([[1, 0, -.2],
-                  [0, 1, -.1],
-                  [0, 0, 1]], dtype=np.float)
-    img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
-    st = time.time()
-    res = opticalFlowPyrLK(img_1.astype(np.float), img_2.astype(np.float), 4, stepSize=20, winSize=5)
-    pts, uv = opticalFlow(img_1.astype(np.float), img_2.astype(np.float), step_size=20, win_size=5)
-    et = time.time()
-    print("Time: {:.4f}".format(et - st))
-    print(res)
+    pass
 
 
-
+# TODO
 def compareLK(img_path):
     """
     ADD TEST
@@ -84,7 +76,7 @@ def transLK(img):
                   [0, 1, t_y],
                   [0, 0, 1]], dtype=np.float)
     shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
-    print("TranslationLK")
+    print("Translation LK")
     mat = findTranslationLK(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
     print("MSE:", MSE(shifted1, shifted2))
@@ -101,7 +93,7 @@ def transCorr(img):
                   [0, 1, t_y],
                   [0, 0, 1]], dtype=np.float)
     shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
-    print("TranslationCorr")
+    print("Translation Correlation")
     mat = findTranslationCorr(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
     print("MSE:", MSE(shifted1, shifted2))
@@ -113,15 +105,15 @@ def transCorr(img):
 
 def rigidLK(img):
     theta = 30
-    t_x = -6
-    t_y = -70
+    t_x = .1
+    t_y = -.3
     t = np.float32([
         [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), t_x],
         [np.sin(np.radians(theta)), np.cos(np.radians(theta)), t_y],
         [0, 0, 1]
     ])
     shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
-    print("RigidLk")
+    print("Rigid Lk")
     mat = findRigidLK(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
     print("MSE:", MSE(shifted1, shifted2))
@@ -133,15 +125,15 @@ def rigidLK(img):
 
 def rigidCorr(img):
     theta = 20
-    t_x = 70
-    t_y = 26
+    t_x = -6
+    t_y = 11
     t = np.float32([
         [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), t_x],
         [np.sin(np.radians(theta)), np.cos(np.radians(theta)), t_y],
         [0, 0, 1]
     ])
     shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
-    print("RigidCorr")
+    print("Rigid Correlation")
     mat = findRigidCorr(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
     print("MSE:", MSE(shifted1, shifted2))
@@ -149,6 +141,47 @@ def rigidCorr(img):
     cv2.imshow("rigid with given", shifted1)
     cv2.imshow("rigid with mine", shifted2)
     cv2.waitKey(0)
+
+
+def warpImage(img):
+    print("Warp Images")
+    T = np.array([[1, 0, 10.5],
+                  [0, 1, -40.7],
+                  [0, 0, 1]], dtype=np.float)
+
+    im2 = cv2.warpPerspective(img, T, img.shape[::-1])
+    im2_mine = warpImages(img, im2, T)
+
+    print("MSE between my function and cvOpen function: ")
+    print("MSE:", MSE(im2_mine, img))
+
+    plt.gray()
+    f, ax = plt.subplots(1, 2)
+    ax[0].set_title("given image")
+    ax[1].set_title("my image")
+    ax[0].imshow(img)
+    ax[1].imshow(im2_mine)
+    plt.show()
+
+    theta = 30
+    T = np.float32([
+        [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), 30],
+        [np.sin(np.radians(theta)), np.cos(np.radians(theta)), -40],
+        [0, 0, 1]
+    ])
+    #
+    # im2_mine = warpImages(img, img, T)
+    # im2 = cv2.warpPerspective(img, T, img.shape[::-1])
+    # print("MSE between my function and cvOpen function: ")
+    # print("MSE:", MSE(im2_mine, im2))
+    #
+    # plt.gray()
+    # f, ax = plt.subplots(1, 2)
+    # ax[0].set_title("OpenCV image")
+    # ax[1].set_title("my image")
+    # ax[0].imshow(im2)
+    # ax[1].imshow(im2_mine)
+    # plt.show()
 
 
 def imageWarpingDemo(img_path):
@@ -160,12 +193,14 @@ def imageWarpingDemo(img_path):
     print("Image Warping Demo")
     img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
     img = cv2.resize(img, (0, 0), fx=.5, fy=.5)
-    ## Translation
+
     # transLK(img)
     # transCorr(img)
-    ## Rigid
+    #
     # rigidLK(img)
-    rigidCorr(img)
+    # rigidCorr(img)
+
+    warpImage(img)
 
 
 # ---------------------------------------------------------------------------
