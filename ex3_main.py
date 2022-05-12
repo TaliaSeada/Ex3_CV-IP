@@ -104,7 +104,7 @@ def transCorr(img):
 
 
 def rigidLK(img):
-    theta = 30
+    theta = 15
     t_x = .1
     t_y = -.3
     t = np.float32([
@@ -152,7 +152,7 @@ def warpImage(img):
     im2 = cv2.warpPerspective(img, T, img.shape[::-1])
     im2_mine = warpImages(img, im2, T)
 
-    print("MSE between my function and cvOpen function: ")
+    print("MSE between my function and OpenCV function: ")
     print("MSE:", MSE(im2_mine, img))
 
     plt.gray()
@@ -169,19 +169,19 @@ def warpImage(img):
         [np.sin(np.radians(theta)), np.cos(np.radians(theta)), -40],
         [0, 0, 1]
     ])
-    #
-    # im2_mine = warpImages(img, img, T)
-    # im2 = cv2.warpPerspective(img, T, img.shape[::-1])
-    # print("MSE between my function and cvOpen function: ")
-    # print("MSE:", MSE(im2_mine, im2))
-    #
-    # plt.gray()
-    # f, ax = plt.subplots(1, 2)
-    # ax[0].set_title("OpenCV image")
-    # ax[1].set_title("my image")
-    # ax[0].imshow(im2)
-    # ax[1].imshow(im2_mine)
-    # plt.show()
+    im2 = cv2.warpPerspective(img, T, img.shape[::-1])
+    im2_mine = warpImages(img, im2, T)
+
+    print("MSE between my function and OpenCV function: ")
+    print("MSE:", MSE(im2_mine, img))
+
+    plt.gray()
+    f, ax = plt.subplots(1, 2)
+    ax[0].set_title("given image")
+    ax[1].set_title("my image")
+    ax[0].imshow(img)
+    ax[1].imshow(im2_mine)
+    plt.show()
 
 
 def imageWarpingDemo(img_path):
@@ -196,11 +196,11 @@ def imageWarpingDemo(img_path):
 
     # transLK(img)
     # transCorr(img)
-    #
-    # rigidLK(img)
-    # rigidCorr(img)
 
-    warpImage(img)
+    rigidLK(img)
+    # rigidCorr(img)
+    #
+    # warpImage(img)
 
 
 # ---------------------------------------------------------------------------
@@ -238,7 +238,7 @@ def pyrLaplacianDemo(img_path):
     lvls = 7
 
     lap_pyr = laplaceianReduce(img, lvls)
-    re_lap = laplaceianExpand(lap_pyr)
+    # re_lap = laplaceianExpand(lap_pyr)
 
     f, ax = plt.subplots(2, lvls + 1)
     plt.gray()
@@ -246,9 +246,9 @@ def pyrLaplacianDemo(img_path):
         ax[0, i].imshow(lap_pyr[i])
         ax[1, i].hist(lap_pyr[i].ravel(), 256, [lap_pyr[i].min(), lap_pyr[i].max()])
 
-    ax[0, -1].set_title('Original Image')
-    ax[0, -1].imshow(re_lap)
-    ax[1, -1].hist(re_lap.ravel(), 256, [0, 1])
+    # ax[0, -1].set_title('Original Image')
+    # ax[0, -1].imshow(re_lap)
+    # ax[1, -1].hist(re_lap.ravel(), 256, [0, 1])
     plt.show()
 
 
@@ -280,10 +280,10 @@ def main():
     # hierarchicalkDemo(img_path)
     # compareLK(img_path)
     #
-    imageWarpingDemo(img_path)
+    # imageWarpingDemo(img_path)
     #
     # pyrGaussianDemo('input/pyr_bit.jpg')
-    # pyrLaplacianDemo('input/pyr_bit.jpg')
+    pyrLaplacianDemo('input/pyr_bit.jpg')
     # blendDemo()
 
 

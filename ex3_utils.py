@@ -156,14 +156,29 @@ def findTranslationLK(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     return mat
 
 
-# TODO
+# TODO find the angle
 def findRigidLK(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     """
     :param im1: input image 1 in grayscale format.
     :param im2: image 1 after Rigid.
     :return: Rigid matrix by LK.
     """
-    theta = 30
+    # find the angle
+    plt.gray()
+    f, ax = plt.subplots(1, 2)
+    ax[0].set_title("im1")
+    ax[1].set_title("im2")
+    ax[0].imshow(im1)
+    ax[1].imshow(im2)
+    plt.show()
+
+    points, vectors = opticalFlow(im2.astype(np.float), im1.astype(np.float), step_size=20, win_size=5)
+    displayOpticalFlow(im1, points, vectors)
+    # p1, st, err = cv2.calcOpticalFlowPyrLK(im2, im1, None, None, winSize=(5, 5))
+
+    # change!!
+    theta = 15
+
     mat = np.float32([
         [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), 0],
         [np.sin(np.radians(theta)), np.cos(np.radians(theta)), 0],
@@ -172,11 +187,8 @@ def findRigidLK(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     mat = np.linalg.inv(mat)
     rotate = cv2.warpPerspective(im2, mat, im2.shape[::-1])
 
-    # cv2.imshow("rigid with mine", rotate)
-    # cv2.waitKey(0)
-    # need to find the theta and then rotate the image back then activate the optical flow function
+    # rotate the image back then activate the optical flow function
     points, vectors = opticalFlow(im1.astype(np.float), rotate.astype(np.float), step_size=20, win_size=5)
-    # displayOpticalFlow(rotate, points, vectors)
     x = []
     y = []
     for i in range(len(vectors)):
@@ -348,12 +360,29 @@ def gaussianPyr(img: np.ndarray, levels: int = 4) -> List[np.ndarray]:
     sigma = 0.3 * ((k_size - 1) * 0.5 - 1) + 0.8
     gauss_ker = cv2.getGaussianKernel(k_size, sigma)
 
-    for i in range(levels):
+    for i in range(1, levels):
         img = cv2.filter2D(img, -1, gauss_ker, borderType=cv2.BORDER_REPLICATE)
         img = img[::2, ::2]
         pyrs.append(img)
 
     return pyrs
+
+
+def expand(img):
+    k_size = 5
+    sigma = 0.3 * ((k_size - 1) * 0.5 - 1) + 0.8
+    gauss_ker = cv2.getGaussianKernel(k_size, sigma)
+
+    h = img.shape[0] * 2
+    w = img.shape[1] * 2
+    if len(img.shape) > 2:
+        newImg = np.zeros((h, w, 3))
+    else:
+        newImg = np.zeros((h, w))
+
+    newImg[::2, ::2] = img
+    newImg = cv2.filter2D(newImg, -1, gauss_ker * 4, borderType=cv2.BORDER_REPLICATE)
+    return newImg
 
 
 def laplaceianReduce(img: np.ndarray, levels: int = 4) -> List[np.ndarray]:
@@ -363,17 +392,14 @@ def laplaceianReduce(img: np.ndarray, levels: int = 4) -> List[np.ndarray]:
     :param levels: Pyramid depth
     :return: Laplacian Pyramid (list of images)
     """
-    pyrs = [img]
-    k_size = 5
-    sigma = 0.3 * ((k_size - 1) * 0.5 - 1) + 0.8
-    gauss_ker = cv2.getGaussianKernel(k_size, sigma)
     gaussPyr = gaussianPyr(img, levels)
-
-    for i in range(levels):
-        img = cv2.filter2D(img, -1, gauss_ker, borderType=cv2.BORDER_REPLICATE)
-        img = img[::2, ::2]
-        pyrs.append(img)
-
+    pyrs = [gaussPyr[-1]]
+    for i in range(levels-1, 0, -1):
+        expanded = expand(gaussPyr[i])
+        lap = cv2.subtract(gaussPyr[i - 1], expanded)
+        # lap = gaussPyr[i - 1] - expanded
+        pyrs.append(lap)
+    pyrs.reverse()
     return pyrs
 
 
