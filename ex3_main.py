@@ -104,9 +104,9 @@ def transCorr(img):
 
 
 def rigidLK(img):
-    theta = 15
-    t_x = .1
-    t_y = -.3
+    theta = .5
+    t_x = -.2
+    t_y = .6
     t = np.float32([
         [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), t_x],
         [np.sin(np.radians(theta)), np.cos(np.radians(theta)), t_y],
@@ -280,10 +280,10 @@ def main():
     # hierarchicalkDemo(img_path)
     # compareLK(img_path)
     #
-    # imageWarpingDemo(img_path)
+    imageWarpingDemo(img_path)
     #
     # pyrGaussianDemo('input/pyr_bit.jpg')
-    pyrLaplacianDemo('input/pyr_bit.jpg')
+    # pyrLaplacianDemo('input/pyr_bit.jpg')
     # blendDemo()
 
 

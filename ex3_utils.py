@@ -84,45 +84,7 @@ def opticalFlowPyrLK(img1: np.ndarray, img2: np.ndarray, k: int,
     where the first channel holds U, and the second V.
     """
 
-    # # list of pyrimids Gaussian
-    # img1_GS_pyrimids = gaussianPyr(img1, k)
-    # img2_GS_pyrimids = gaussianPyr(img2, k)
-    #
-    # top_img_1 = img1_GS_pyrimids[k - 1]
-    # top_img_2 = img2_GS_pyrimids[k - 1]
-    #
-    # _, du_dv = opticalFlow(top_img_1, top_img_2, stepSize, winSize)
-    #
-    # us = []
-    # vs = []
-    #
-    # for i in du_dv:
-    #     us.append(i[0])
-    #     vs.append(i[1])
-    #
-    # for i in range(k - 2, 0, -1):
-    #     img_1 = img1_GS_pyrimids[i]
-    #     img_2 = img2_GS_pyrimids[i]
-    #
-    #     _, temp = opticalFlow(img_1, img_2, stepSize, winSize)
-    #
-    #     us_temp = []
-    #     vs_temp = []
-    #
-    #     for j in temp:
-    #         us_temp.append(j[0])
-    #         vs_temp.append(j[1])
-    #
-    #     us = us * 2 + us_temp
-    #     vs = vs * 2 + vs_temp
-    #
-    # twos = []
-    # for i in range(len(vs)):
-    #     twos.append(2)
-    #
-    # result = np.array((us, vs, twos), dtype=float)
-    #
-    # return result
+    # expand the image with zeros then fill in the blanks with the last layer image
     pass
 
 
@@ -141,12 +103,15 @@ def findTranslationLK(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
 
     x = []
     y = []
+    med_u = np.median(vectors[0])
+    med_v = np.median(vectors[1])
     for i in range(len(vectors)):
-        x.append(vectors[i][0])
-        y.append(vectors[i][1])
+        if abs(vectors[i][0]) > med_u and abs(vectors[i][1]) > med_v:
+            x.append(vectors[i][0])
+            y.append(vectors[i][1])
 
-    t_x = np.median(x)
-    t_y = np.median(y)
+    t_x = np.median(x)*2
+    t_y = np.median(y)*2
 
     mat = np.float32([
         [1, 0, t_x],
@@ -156,47 +121,37 @@ def findTranslationLK(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     return mat
 
 
-# TODO find the angle
 def findRigidLK(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     """
     :param im1: input image 1 in grayscale format.
     :param im2: image 1 after Rigid.
     :return: Rigid matrix by LK.
     """
-    # find the angle
-    plt.gray()
-    f, ax = plt.subplots(1, 2)
-    ax[0].set_title("im1")
-    ax[1].set_title("im2")
-    ax[0].imshow(im1)
-    ax[1].imshow(im2)
-    plt.show()
+    points, vectors = opticalFlow(im1.astype(np.float), im2.astype(np.float), step_size=20, win_size=5)
+    first_pnts = []
+    second_pnts = [] = []
+    for i in range(1, len(points), 5):
+        first_pnts.append(points[i])
+        point = (int(points[i][0] + vectors[i][0]), int(points[i][1] + vectors[i][1]))
+        second_pnts.append(point)
 
-    points, vectors = opticalFlow(im2.astype(np.float), im1.astype(np.float), step_size=20, win_size=5)
-    displayOpticalFlow(im1, points, vectors)
-    # p1, st, err = cv2.calcOpticalFlowPyrLK(im2, im1, None, None, winSize=(5, 5))
+    angs = []
+    for i in range(len(first_pnts)):
+        ang = find_ang(first_pnts[i], second_pnts[i])
+        angs.append(ang)
 
-    # change!!
-    theta = 15
-
-    mat = np.float32([
-        [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), 0],
-        [np.sin(np.radians(theta)), np.cos(np.radians(theta)), 0],
-        [0, 0, 1]
-    ])
-    mat = np.linalg.inv(mat)
-    rotate = cv2.warpPerspective(im2, mat, im2.shape[::-1])
-
-    # rotate the image back then activate the optical flow function
-    points, vectors = opticalFlow(im1.astype(np.float), rotate.astype(np.float), step_size=20, win_size=5)
+    theta = (360 - np.median(angs))*2
     x = []
     y = []
+    med_u = np.median(vectors[0])
+    med_v = np.median(vectors[1])
     for i in range(len(vectors)):
-        x.append(vectors[i][0])
-        y.append(vectors[i][1])
+        if abs(vectors[i][0]) > med_u and abs(vectors[i][1]) > med_v:
+            x.append(vectors[i][0])
+            y.append(vectors[i][1])
 
-    t_x = np.median(x)
-    t_y = np.median(y)
+    t_x = np.mean(x)
+    t_y = np.mean(y)
 
     mat = np.float32([
         [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), t_x],
