@@ -66,12 +66,23 @@ def opticalFlow(im1: np.ndarray, im2: np.ndarray, step_size=10,
             Atb = [[-(Ix_cut * It_cut).sum()], [-(Iy_cut * It_cut).sum()]]
             u, v = np.linalg.inv(AtA) @ Atb
             x_y.append([j, i])
-            u_v.append([u, v])
+            u_v.append([u[0], v[0]])
 
     return np.array(x_y), np.array(u_v)
 
 
-# TODO
+def expand_LK(img):
+    h = img.shape[0] * 2
+    w = img.shape[1] * 2
+    if len(img.shape) > 2:
+        newImg = np.zeros((h, w, 3))
+    else:
+        newImg = np.zeros((h, w))
+
+    newImg[::2, ::2] = img
+    return newImg
+
+
 def opticalFlowPyrLK(img1: np.ndarray, img2: np.ndarray, k: int,
                      stepSize: int, winSize: int) -> np.ndarray:
     """
@@ -85,7 +96,29 @@ def opticalFlowPyrLK(img1: np.ndarray, img2: np.ndarray, k: int,
     """
 
     # expand the image with zeros then fill in the blanks with the last layer image
-    pass
+    im1_pyrs = gaussianPyr(img1, k)
+    im1_pyrs.reverse()
+    im2_pyrs = gaussianPyr(img2, k)
+    im2_pyrs.reverse()
+
+    points_i = []
+    vectors_i = []
+    for i in range(len(im2_pyrs)):
+        points_i, vectors_i = opticalFlow(im1_pyrs[i], im2_pyrs[i], step_size=stepSize, win_size=winSize)
+        new_img = expand_LK(im1_pyrs[i])
+
+        for j in range(len(points_i)):
+            ind_x = points_i[j][0]
+            new_img[ind_x] += 2 * vectors_i[j][0]
+            ind_y = points_i[j][1]
+            new_img[ind_y] += 2 * vectors_i[j][1]
+
+        if i < len(im2_pyrs)-1:
+            im = im1_pyrs[i+1]
+            new_img += im
+            im1_pyrs[i+1] = new_img/255
+
+    return vectors_i, points_i
 
 
 # ---------------------------------------------------------------------------
@@ -176,17 +209,17 @@ def findTranslationCorr(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     y, x = np.unravel_index(np.argmax(corr), corr.shape)
     y2, x2 = np.array(im2.shape) // 2
 
-    fig, (ax_img1, ax_img2, ax_corr) = plt.subplots(1, 3, figsize=(15, 5))
-    im = ax_img1.imshow(im1, cmap='gray')
-    ax_img1.set_title('img1')
-    ax_img2.imshow(im2, cmap='gray')
-    ax_img2.set_title('img2')
-    im = ax_corr.imshow(corr, cmap='viridis')
-    ax_corr.set_title('Cross-correlation')
-    ax_img1.plot(x, y, 'ro')
-    ax_img2.plot(x2, y2, 'go')
-    ax_corr.plot(x, y, 'ro')
-    fig.show()
+    # fig, (ax_img1, ax_img2, ax_corr) = plt.subplots(1, 3, figsize=(15, 5))
+    # im = ax_img1.imshow(im1, cmap='gray')
+    # ax_img1.set_title('img1')
+    # ax_img2.imshow(im2, cmap='gray')
+    # ax_img2.set_title('img2')
+    # im = ax_corr.imshow(corr, cmap='viridis')
+    # ax_corr.set_title('Cross-correlation')
+    # ax_img1.plot(x, y, 'ro')
+    # ax_img2.plot(x2, y2, 'go')
+    # ax_corr.plot(x, y, 'ro')
+    # fig.show()
 
     t_x = x2 - x - 1
     t_y = y2 - y - 1
@@ -214,17 +247,17 @@ def findRigidCorr(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     y, x = np.unravel_index(np.argmax(corr), corr.shape)
     y2, x2 = np.array(im2.shape) // 2
 
-    fig, (ax_img1, ax_img2, ax_corr) = plt.subplots(1, 3, figsize=(15, 5))
-    im = ax_img1.imshow(im1, cmap='gray')
-    ax_img1.set_title('img1')
-    ax_img2.imshow(im2, cmap='gray')
-    ax_img2.set_title('img2')
-    im = ax_corr.imshow(corr, cmap='viridis')
-    ax_corr.set_title('Cross-correlation')
-    ax_img1.plot(x, y, 'ro')
-    ax_img2.plot(x2, y2, 'go')
-    ax_corr.plot(x, y, 'ro')
-    fig.show()
+    # fig, (ax_img1, ax_img2, ax_corr) = plt.subplots(1, 3, figsize=(15, 5))
+    # im = ax_img1.imshow(im1, cmap='gray')
+    # ax_img1.set_title('img1')
+    # ax_img2.imshow(im2, cmap='gray')
+    # ax_img2.set_title('img2')
+    # im = ax_corr.imshow(corr, cmap='viridis')
+    # ax_corr.set_title('Cross-correlation')
+    # ax_img1.plot(x, y, 'ro')
+    # ax_img2.plot(x2, y2, 'go')
+    # ax_corr.plot(x, y, 'ro')
+    # fig.show()
 
     theta = find_ang((x2, y2), (x, y))
     mat = np.float32([
@@ -271,14 +304,6 @@ def warpImages(im1: np.ndarray, im2: np.ndarray, T: np.ndarray) -> np.ndarray:
     :return: warp image 2 according to T and display both image1
     and the wrapped version of the image2 in the same figure.
     """
-    plt.gray()
-    f, ax = plt.subplots(1, 2)
-    ax[0].set_title("im1")
-    ax[1].set_title("im2")
-    ax[0].imshow(im1)
-    ax[1].imshow(im2)
-    plt.show()
-
     T = np.linalg.inv(T)
     # https://docs.opencv.org/4.x/da/d54/group__imgproc__transform.html#gaf73673a7e8e18ec6963e3774e6a94b87
     for i in range(im2.shape[0]-1):
@@ -352,7 +377,6 @@ def laplaceianReduce(img: np.ndarray, levels: int = 4) -> List[np.ndarray]:
     for i in range(levels-1, 0, -1):
         expanded = expand(gaussPyr[i])
         lap = cv2.subtract(gaussPyr[i - 1], expanded)
-        # lap = gaussPyr[i - 1] - expanded
         pyrs.append(lap)
     pyrs.reverse()
     return pyrs

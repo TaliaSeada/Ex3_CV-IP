@@ -7,6 +7,9 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
+def MSE(a: np.ndarray, b: np.ndarray) -> float:
+    return np.square(a - b).mean()
+
 # ---------------------------------------------------------------------------
 # ------------------------ Lucas Kanade optical flow ------------------------
 # ---------------------------------------------------------------------------
@@ -29,19 +32,37 @@ def lkDemo(img_path):
     print(np.mean(uv, 0))
 
     displayOpticalFlow(img_2, pts, uv)
+    return pts, uv
 
 
-# TODO
 def hierarchicalkDemo(img_path):
     """
     ADD TEST
     :param img_path: Image input
     :return:
     """
-    pass
+    print("hierarchical Demo")
+    img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
+    t = np.array([[1, 0, 10],
+                  [0, 1, 20],
+                  [0, 0, 1]], dtype=np.float)
+    img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
+
+    # cv2.imshow("rigid with given", img_1)
+    # cv2.imshow("rigid with mine", img_2)
+    # cv2.waitKey(0)
+
+    st = time.time()
+    uv, pts = opticalFlowPyrLK(img_1.astype(np.float), img_2.astype(np.float), 4, stepSize=20, winSize=5)
+    et = time.time()
+    print("Time: {:.4f}".format(et - st))
+
+    displayOpticalFlow(img_1, pts, uv)
+    return uv, pts
 
 
-# TODO
+# TODO test
 def compareLK(img_path):
     """
     ADD TEST
@@ -51,7 +72,14 @@ def compareLK(img_path):
     """
     print("Compare LK & Hierarchical LK")
 
-    pass
+    img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
+    t = np.array([[1, 0, 10],
+                  [0, 1, 5],
+                  [0, 0, 1]], dtype=np.float)
+    img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
+    pts_lk, uv_lk = opticalFlow(img_1.astype(np.float), img_2.astype(np.float), step_size=20, win_size=5)
+    uv_hlk, pts_hlk = opticalFlowPyrLK(img_1.astype(np.float), img_2.astype(np.float), 5, stepSize=20, winSize=5)
 
 
 def displayOpticalFlow(img: np.ndarray, pts: np.ndarray, uvs: np.ndarray):
@@ -64,9 +92,6 @@ def displayOpticalFlow(img: np.ndarray, pts: np.ndarray, uvs: np.ndarray):
 # ---------------------------------------------------------------------------
 # ------------------------ Image Alignment & Warping ------------------------
 # ---------------------------------------------------------------------------
-
-def MSE(a: np.ndarray, b: np.ndarray) -> float:
-    return np.square(a - b).mean()
 
 
 def transLK(img):
@@ -81,9 +106,14 @@ def transLK(img):
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
     print("MSE:", MSE(shifted1, shifted2))
     print(mat)
-    cv2.imshow("translation with given", shifted1)
-    cv2.imshow("translation with mine", shifted2)
-    cv2.waitKey(0)
+
+    plt.gray()
+    f, ax = plt.subplots(1, 2)
+    ax[0].set_title("translation with given")
+    ax[1].set_title("translation with mine")
+    ax[0].imshow(shifted1)
+    ax[1].imshow(shifted2)
+    plt.show()
 
 
 def transCorr(img):
@@ -98,9 +128,14 @@ def transCorr(img):
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
     print("MSE:", MSE(shifted1, shifted2))
     print(mat)
-    cv2.imshow("translation with given", shifted1)
-    cv2.imshow("translation with mine", shifted2)
-    cv2.waitKey(0)
+
+    plt.gray()
+    f, ax = plt.subplots(1, 2)
+    ax[0].set_title("translation with given")
+    ax[1].set_title("translation with mine")
+    ax[0].imshow(shifted1)
+    ax[1].imshow(shifted2)
+    plt.show()
 
 
 def rigidLK(img):
@@ -118,9 +153,14 @@ def rigidLK(img):
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
     print("MSE:", MSE(shifted1, shifted2))
     print(mat)
-    cv2.imshow("rigid with given", shifted1)
-    cv2.imshow("rigid with mine", shifted2)
-    cv2.waitKey(0)
+
+    plt.gray()
+    f, ax = plt.subplots(1, 2)
+    ax[0].set_title("rigid with given")
+    ax[1].set_title("rigid with mine")
+    ax[0].imshow(shifted1)
+    ax[1].imshow(shifted2)
+    plt.show()
 
 
 def rigidCorr(img):
@@ -138,9 +178,14 @@ def rigidCorr(img):
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
     print("MSE:", MSE(shifted1, shifted2))
     print(mat)
-    cv2.imshow("rigid with given", shifted1)
-    cv2.imshow("rigid with mine", shifted2)
-    cv2.waitKey(0)
+
+    plt.gray()
+    f, ax = plt.subplots(1, 2)
+    ax[0].set_title("rigid with given")
+    ax[1].set_title("rigid with mine")
+    ax[0].imshow(shifted1)
+    ax[1].imshow(shifted2)
+    plt.show()
 
 
 def warpImage(img):
@@ -157,8 +202,9 @@ def warpImage(img):
 
     plt.gray()
     f, ax = plt.subplots(1, 2)
-    ax[0].set_title("given image")
-    ax[1].set_title("my image")
+
+    ax[0].set_title("given image - translation")
+    ax[1].set_title("my image - translation")
     ax[0].imshow(img)
     ax[1].imshow(im2_mine)
     plt.show()
@@ -177,8 +223,8 @@ def warpImage(img):
 
     plt.gray()
     f, ax = plt.subplots(1, 2)
-    ax[0].set_title("given image")
-    ax[1].set_title("my image")
+    ax[0].set_title("given image - rigid")
+    ax[1].set_title("my image - rigid")
     ax[0].imshow(img)
     ax[1].imshow(im2_mine)
     plt.show()
@@ -194,13 +240,16 @@ def imageWarpingDemo(img_path):
     img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
     img = cv2.resize(img, (0, 0), fx=.5, fy=.5)
 
-    # transLK(img)
-    # transCorr(img)
 
+    transLK(img)
+    print("\n")
+    transCorr(img)
+    print("\n")
     rigidLK(img)
-    # rigidCorr(img)
-    #
-    # warpImage(img)
+    print("\n")
+    rigidCorr(img)
+    print("\n")
+    warpImage(img)
 
 
 # ---------------------------------------------------------------------------
@@ -277,14 +326,21 @@ def main():
 
     img_path = 'input/boxMan.jpg'
     # lkDemo(img_path)
-    # hierarchicalkDemo(img_path)
+    # print("\n")
+    hierarchicalkDemo(img_path)
+    # print("\n")
     # compareLK(img_path)
+    # print("\n")
     #
-    imageWarpingDemo(img_path)
+    # imageWarpingDemo(img_path)
+    # print("\n")
     #
     # pyrGaussianDemo('input/pyr_bit.jpg')
+    # print("\n")
     # pyrLaplacianDemo('input/pyr_bit.jpg')
-    # blendDemo()
+    # print("\n")
+    # # blendDemo()
+    # print("\n")
 
 
 if __name__ == '__main__':
