@@ -44,8 +44,8 @@ def hierarchicalkDemo(img_path):
     print("hierarchical Demo")
     img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
     img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
-    t = np.array([[1, 0, 10],
-                  [0, 1, 20],
+    t = np.array([[1, 0, 0],
+                  [0, 1, 0],
                   [0, 0, 1]], dtype=np.float)
     img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
 
@@ -287,7 +287,7 @@ def pyrLaplacianDemo(img_path):
     lvls = 7
 
     lap_pyr = laplaceianReduce(img, lvls)
-    # re_lap = laplaceianExpand(lap_pyr)
+    re_lap = laplaceianExpand(lap_pyr)
 
     f, ax = plt.subplots(2, lvls + 1)
     plt.gray()
@@ -295,9 +295,9 @@ def pyrLaplacianDemo(img_path):
         ax[0, i].imshow(lap_pyr[i])
         ax[1, i].hist(lap_pyr[i].ravel(), 256, [lap_pyr[i].min(), lap_pyr[i].max()])
 
-    # ax[0, -1].set_title('Original Image')
-    # ax[0, -1].imshow(re_lap)
-    # ax[1, -1].hist(re_lap.ravel(), 256, [0, 1])
+    ax[0, -1].set_title('Original Image')
+    ax[0, -1].imshow(re_lap)
+    ax[1, -1].hist(re_lap.ravel(), 256, [0, 1])
     plt.show()
 
 
@@ -327,7 +327,7 @@ def main():
     img_path = 'input/boxMan.jpg'
     # lkDemo(img_path)
     # print("\n")
-    hierarchicalkDemo(img_path)
+    # hierarchicalkDemo(img_path)
     # print("\n")
     # compareLK(img_path)
     # print("\n")
@@ -339,8 +339,8 @@ def main():
     # print("\n")
     # pyrLaplacianDemo('input/pyr_bit.jpg')
     # print("\n")
-    # # blendDemo()
-    # print("\n")
+    blendDemo()
+    print("\n")
 
 
 if __name__ == '__main__':

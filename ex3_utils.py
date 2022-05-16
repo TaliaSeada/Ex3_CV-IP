@@ -5,11 +5,8 @@ from typing import List
 import numpy as np
 import cv2
 from numpy.linalg import LinAlgError
-import matplotlib.pyplot as plt
 
-from ex3_main import displayOpticalFlow
-
-
+# TODO comments
 def myID() -> np.int:
     """
     Return my ID (not the friend's ID I copied from)
@@ -83,6 +80,7 @@ def expand_LK(img):
     return newImg
 
 
+# TODO zeros
 def opticalFlowPyrLK(img1: np.ndarray, img2: np.ndarray, k: int,
                      stepSize: int, winSize: int) -> np.ndarray:
     """
@@ -105,17 +103,17 @@ def opticalFlowPyrLK(img1: np.ndarray, img2: np.ndarray, k: int,
     vectors_i = []
     for i in range(len(im2_pyrs)):
         points_i, vectors_i = opticalFlow(im1_pyrs[i], im2_pyrs[i], step_size=stepSize, win_size=winSize)
+        # if check_zeros(vectors_i):
+        #     return vectors_i, points_i
+
         new_img = expand_LK(im1_pyrs[i])
 
         for j in range(len(points_i)):
-            ind_x = points_i[j][0]
-            new_img[ind_x] += 2 * vectors_i[j][0]
-            ind_y = points_i[j][1]
-            new_img[ind_y] += 2 * vectors_i[j][1]
+            new_img[points_i[j][0]] += 2 * vectors_i[j][0]
+            new_img[points_i[j][1]] += 2 * vectors_i[j][1]
 
         if i < len(im2_pyrs)-1:
-            im = im1_pyrs[i+1]
-            new_img += im
+            new_img += im1_pyrs[i+1]
             im1_pyrs[i+1] = new_img/255
 
     return vectors_i, points_i
@@ -339,6 +337,7 @@ def gaussianPyr(img: np.ndarray, levels: int = 4) -> List[np.ndarray]:
     k_size = 5
     sigma = 0.3 * ((k_size - 1) * 0.5 - 1) + 0.8
     gauss_ker = cv2.getGaussianKernel(k_size, sigma)
+    gauss_ker = np.dot(gauss_ker, gauss_ker.T)
 
     for i in range(1, levels):
         img = cv2.filter2D(img, -1, gauss_ker, borderType=cv2.BORDER_REPLICATE)
@@ -352,6 +351,7 @@ def expand(img):
     k_size = 5
     sigma = 0.3 * ((k_size - 1) * 0.5 - 1) + 0.8
     gauss_ker = cv2.getGaussianKernel(k_size, sigma)
+    gauss_ker = np.dot(gauss_ker, gauss_ker.T)
 
     h = img.shape[0] * 2
     w = img.shape[1] * 2
@@ -388,7 +388,13 @@ def laplaceianExpand(lap_pyr: List[np.ndarray]) -> np.ndarray:
     :param lap_pyr: Laplacian Pyramid
     :return: Original image
     """
-    pass
+    restored = [lap_pyr[-1]]
+    for i in range(len(lap_pyr)-1, 0, -1):
+        exp = expand(restored[-1])
+        res = lap_pyr[i-1] + exp
+        restored.append(res)
+
+    return restored[-1]
 
 
 def pyrBlend(img_1: np.ndarray, img_2: np.ndarray,
@@ -401,4 +407,18 @@ def pyrBlend(img_1: np.ndarray, img_2: np.ndarray,
     :param levels: Pyramid depth
     :return: (Naive blend, Blended Image)
     """
-    pass
+    img_1 = cv2.resize(img_1, (mask.shape[1], mask.shape[0]))
+    img_2 = cv2.resize(img_2, (mask.shape[1], mask.shape[0]))
+
+    im1_lap = laplaceianReduce(img_1, levels)
+    im2_lap = laplaceianReduce(img_2, levels)
+    mask_pyr = gaussianPyr(mask, levels)
+
+    lap_for_exp = []
+    for i in range(levels):
+        merge = im1_lap[i] * mask_pyr[i] + (1 - mask_pyr[i]) * im2_lap[i]
+        lap_for_exp.append(merge)
+    new_img = laplaceianExpand(lap_for_exp)
+    naive = img_1 * mask + (1 - mask) * img_2
+
+    return naive, new_img
