@@ -45,8 +45,8 @@ def hierarchicalkDemo(img_path):
     print("hierarchical Demo")
     img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
     img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
-    t = np.array([[1, 0, 0],
-                  [0, 1, 0],
+    t = np.array([[1, 0, 3],
+                  [0, 1, -5],
                   [0, 0, 1]], dtype=np.float)
     img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
 
@@ -59,7 +59,7 @@ def hierarchicalkDemo(img_path):
     return uv, pts
 
 
-def lkDemo(img_path, t):
+def lkDemot(img_path, t):
     img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
     img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
     img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
@@ -68,7 +68,7 @@ def lkDemo(img_path, t):
     return pts, uv
 
 
-def hierarchicalkDemo(img_path, t):
+def hierarchicalkDemot(img_path, t):
     img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
     img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
     img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
@@ -85,11 +85,11 @@ def compareLK(img_path):
     :return:
     """
     print("Compare LK & Hierarchical LK")
-    t = np.array([[1, 0, 0],
-                  [0, 1, 0],
+    t = np.array([[1, 0, 3],
+                  [0, 1, -5],
                   [0, 0, 1]], dtype=np.float)
-    lkDemo(img_path, t)
-    hierarchicalkDemo(img_path, t)
+    lkDemot(img_path, t)
+    hierarchicalkDemot(img_path, t)
 
     lk = 'lucas-kanade.png'
     lkh = 'hierarchical lucas-kanade.png'
@@ -369,7 +369,7 @@ def main():
     #
     # compareLK(img_path)
     # print("\n")
-    #
+
     # imageWarpingDemo(img_path)
     # print("\n")
     #

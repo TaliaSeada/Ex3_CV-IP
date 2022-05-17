@@ -67,19 +67,13 @@ def opticalFlow(im1: np.ndarray, im2: np.ndarray, step_size=10,
     return np.array(x_y), np.array(u_v)
 
 
-def expand_LK(img):
-    h = img.shape[0] * 2
-    w = img.shape[1] * 2
-    if len(img.shape) > 2:
-        newImg = np.zeros((h, w, 3))
-    else:
-        newImg = np.zeros((h, w))
-
-    newImg[::2, ::2] = img
-    return newImg
+def check(p, points):
+    for i in points:
+        if np.array_equal(p, i):
+            return True
+    return False
 
 
-# TODO zeros
 def opticalFlowPyrLK(img1: np.ndarray, img2: np.ndarray, k: int,
                      stepSize: int, winSize: int) -> np.ndarray:
     """
@@ -91,30 +85,34 @@ def opticalFlowPyrLK(img1: np.ndarray, img2: np.ndarray, k: int,
     :return: A 3d array, with a shape of (m, n, 2),
     where the first channel holds U, and the second V.
     """
-
-    # expand the image with zeros then fill in the blanks with the last layer image
     im1_pyrs = gaussianPyr(img1, k)
     im1_pyrs.reverse()
     im2_pyrs = gaussianPyr(img2, k)
     im2_pyrs.reverse()
 
-    points_i = []
-    vectors_i = []
-    for i in range(len(im2_pyrs)):
+    points, vectors = opticalFlow(im1_pyrs[0], im2_pyrs[0], step_size=stepSize, win_size=winSize)
+    points = list(points)
+    vectors = list(vectors)
+
+    for i in range(1, len(im2_pyrs)):
+        for j in range(len(points)):
+            for k in range(len(points[j])):
+                points[j][k] *= 2
+            for k in range(len(vectors[j])):
+                vectors[j][k] *= 2
+
         points_i, vectors_i = opticalFlow(im1_pyrs[i], im2_pyrs[i], step_size=stepSize, win_size=winSize)
-        new_img = expand_LK(im1_pyrs[i])
-        # cv
+        points_i = list(points_i)
+        vectors_i = list(vectors_i)
 
         for j in range(len(points_i)):
-            new_img[points_i[j][0]] += 2 * vectors_i[j][0]
-            new_img[points_i[j][1]] += 2 * vectors_i[j][1]
+            if not check(list(points_i[j]), points):
+                points.append(points_i[j])
+                vectors.append(vectors_i[j])
+            else:
+                vectors[points.index(points_i[j])] += vectors_i[j]
 
-        if i < len(im2_pyrs)-1:
-            new_img += im1_pyrs[i+1]
-            im1_pyrs[i+1] = new_img/255
-
-    return vectors_i, points_i
-
+    return np.array(vectors), np.array(points)
 
 # ---------------------------------------------------------------------------
 # ------------------------ Image Alignment & Warping ------------------------
