@@ -1,3 +1,4 @@
+import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -49,20 +50,33 @@ def hierarchicalkDemo(img_path):
                   [0, 0, 1]], dtype=np.float)
     img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
 
-    # cv2.imshow("rigid with given", img_1)
-    # cv2.imshow("rigid with mine", img_2)
-    # cv2.waitKey(0)
-
     st = time.time()
     uv, pts = opticalFlowPyrLK(img_1.astype(np.float), img_2.astype(np.float), 4, stepSize=20, winSize=5)
     et = time.time()
     print("Time: {:.4f}".format(et - st))
 
-    displayOpticalFlow(img_1, pts, uv)
+    displayOpticalFlowh(img_1, pts, uv)
     return uv, pts
 
 
-# TODO test
+def lkDemo(img_path, t):
+    img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
+    img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
+    pts, uv = opticalFlow(img_1.astype(np.float), img_2.astype(np.float), step_size=20, win_size=5)
+    displayOpticalFlow(img_2, pts, uv)
+    return pts, uv
+
+
+def hierarchicalkDemo(img_path, t):
+    img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
+    img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
+    uv, pts = opticalFlowPyrLK(img_1.astype(np.float), img_2.astype(np.float), 4, stepSize=20, winSize=5)
+    displayOpticalFlowh(img_1, pts, uv)
+    return uv, pts
+
+
 def compareLK(img_path):
     """
     ADD TEST
@@ -71,21 +85,43 @@ def compareLK(img_path):
     :return:
     """
     print("Compare LK & Hierarchical LK")
-
-    img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
-    img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
-    t = np.array([[1, 0, 10],
-                  [0, 1, 5],
+    t = np.array([[1, 0, 0],
+                  [0, 1, 0],
                   [0, 0, 1]], dtype=np.float)
-    img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
-    pts_lk, uv_lk = opticalFlow(img_1.astype(np.float), img_2.astype(np.float), step_size=20, win_size=5)
-    uv_hlk, pts_hlk = opticalFlowPyrLK(img_1.astype(np.float), img_2.astype(np.float), 5, stepSize=20, winSize=5)
+    lkDemo(img_path, t)
+    hierarchicalkDemo(img_path, t)
+
+    lk = 'lucas-kanade.png'
+    lkh = 'hierarchical lucas-kanade.png'
+
+    lk = cv2.cvtColor(cv2.imread(lk), cv2.COLOR_BGR2RGB)
+    lk = cv2.resize(lk, (0, 0), fx=.5, fy=0.5)
+
+    lkh = cv2.cvtColor(cv2.imread(lkh), cv2.COLOR_BGR2RGB)
+    lkh = cv2.resize(lkh, (0, 0), fx=.5, fy=0.5)
+
+    f, ax = plt.subplots(1, 2)
+    plt.gray()
+    ax[0].set_title("lucas-kanade")
+    ax[1].set_title("hierarchical lucas-kanade")
+    ax[0].imshow(lk)
+    ax[1].imshow(lkh)
+    plt.show()
 
 
 def displayOpticalFlow(img: np.ndarray, pts: np.ndarray, uvs: np.ndarray):
     plt.imshow(img, cmap='gray')
     plt.quiver(pts[:, 0], pts[:, 1], uvs[:, 0], uvs[:, 1], color='r')
 
+    plt.savefig("lucas-kanade")
+    plt.show()
+
+
+def displayOpticalFlowh(img: np.ndarray, pts: np.ndarray, uvs: np.ndarray):
+    plt.imshow(img, cmap='gray')
+    plt.quiver(pts[:, 0], pts[:, 1], uvs[:, 0], uvs[:, 1], color='r')
+
+    plt.savefig("hierarchical lucas-kanade")
     plt.show()
 
 
@@ -327,8 +363,10 @@ def main():
     img_path = 'input/boxMan.jpg'
     # lkDemo(img_path)
     # print("\n")
-    # hierarchicalkDemo(img_path)
-    # print("\n")
+    # #
+    hierarchicalkDemo(img_path)
+    print("\n")
+    #
     # compareLK(img_path)
     # print("\n")
     #
@@ -337,10 +375,12 @@ def main():
     #
     # pyrGaussianDemo('input/pyr_bit.jpg')
     # print("\n")
+    #
     # pyrLaplacianDemo('input/pyr_bit.jpg')
     # print("\n")
-    blendDemo()
-    print("\n")
+    #
+    # blendDemo()
+    # print("\n")
 
 
 if __name__ == '__main__':

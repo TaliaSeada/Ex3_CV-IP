@@ -1,10 +1,9 @@
-import math
-import sys
 from typing import List
 
 import numpy as np
 import cv2
 from numpy.linalg import LinAlgError
+
 
 # TODO comments
 def myID() -> np.int:
@@ -103,10 +102,8 @@ def opticalFlowPyrLK(img1: np.ndarray, img2: np.ndarray, k: int,
     vectors_i = []
     for i in range(len(im2_pyrs)):
         points_i, vectors_i = opticalFlow(im1_pyrs[i], im2_pyrs[i], step_size=stepSize, win_size=winSize)
-        # if check_zeros(vectors_i):
-        #     return vectors_i, points_i
-
         new_img = expand_LK(im1_pyrs[i])
+        # cv
 
         for j in range(len(points_i)):
             new_img[points_i[j][0]] += 2 * vectors_i[j][0]
@@ -376,6 +373,8 @@ def laplaceianReduce(img: np.ndarray, levels: int = 4) -> List[np.ndarray]:
     pyrs = [gaussPyr[-1]]
     for i in range(levels-1, 0, -1):
         expanded = expand(gaussPyr[i])
+        # gaussPyr[i - 1] = cv2.resize(gaussPyr[i - 1], (expanded.shape[1], expanded.shape[0]))
+        expanded = cv2.resize(expanded, (gaussPyr[i - 1].shape[1], gaussPyr[i - 1].shape[0]))
         lap = cv2.subtract(gaussPyr[i - 1], expanded)
         pyrs.append(lap)
     pyrs.reverse()
@@ -391,6 +390,7 @@ def laplaceianExpand(lap_pyr: List[np.ndarray]) -> np.ndarray:
     restored = [lap_pyr[-1]]
     for i in range(len(lap_pyr)-1, 0, -1):
         exp = expand(restored[-1])
+        exp = cv2.resize(exp, (lap_pyr[i-1].shape[1], lap_pyr[i-1].shape[0]))
         res = lap_pyr[i-1] + exp
         restored.append(res)
 
