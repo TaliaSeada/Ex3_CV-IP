@@ -363,13 +363,13 @@ def main():
     img_path = 'input/boxMan.jpg'
     # lkDemo(img_path)
     # print("\n")
-    # #
+    #
     hierarchicalkDemo(img_path)
     print("\n")
-    #
+
     # compareLK(img_path)
     # print("\n")
-
+    #
     # imageWarpingDemo(img_path)
     # print("\n")
     #

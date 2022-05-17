@@ -105,12 +105,12 @@ def opticalFlowPyrLK(img1: np.ndarray, img2: np.ndarray, k: int,
         points_i = list(points_i)
         vectors_i = list(vectors_i)
 
-        for j in range(len(points_i)):
-            if not check(list(points_i[j]), points):
-                points.append(points_i[j])
-                vectors.append(vectors_i[j])
+        for t in range(len(points_i)):
+            if not check(list(points_i[t]), points):
+                points.append(points_i[t])
+                vectors.append(vectors_i[t])
             else:
-                vectors[points.index(points_i[j])] += vectors_i[j]
+                vectors[points.index(points_i[t])] += vectors_i[t]
 
     return np.array(vectors), np.array(points)
 
