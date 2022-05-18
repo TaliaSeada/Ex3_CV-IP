@@ -19,6 +19,7 @@ def MSE(a: np.ndarray, b: np.ndarray) -> float:
 def lkDemo(img_path):
     print("LK Demo")
     img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    # img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
     img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
     t = np.array([[1, 0, -.2],
                   [0, 1, -.1],
@@ -43,7 +44,7 @@ def hierarchicalkDemo(img_path):
     """
     print("hierarchical Demo")
     img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
-    img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
+    # img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
     img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
     t = np.array([[1, 0, 3],
                   [0, 1, -5],
@@ -59,15 +60,15 @@ def hierarchicalkDemo(img_path):
 
 
 def lkDemot(img_path, t):
-    img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
     img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
     img_2 = cv2.warpPerspective(img_1, t, (img_1.shape[1], img_1.shape[0]))
     pts, uv = opticalFlow(img_1.astype(np.float), img_2.astype(np.float), step_size=20, win_size=5)
-    displayOpticalFlow(img_2, pts, uv)
+    displayOpticalFlow(img_1, pts, uv)
 
 
 def hierarchicalkDemot(img_path, t):
-    img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
     img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
     img_2 = cv2.warpPerspective(img_1, t, (img_1.shape[1], img_1.shape[0]))
     uv, pts = opticalFlowPyrLK(img_1.astype(np.float), img_2.astype(np.float), 4, stepSize=20, winSize=5)
