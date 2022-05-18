@@ -133,7 +133,7 @@ def transLK(img):
                   [0, 1, t_y],
                   [0, 0, 1]], dtype=np.float)
     shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
-    cv2.imwrite('output/imTransA2.jpg', shifted1)
+    cv2.imwrite('input/imTransA2.jpg', shifted1)
     print("Translation LK")
     mat = findTranslationLK(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
@@ -156,7 +156,7 @@ def transCorr(img):
                   [0, 1, t_y],
                   [0, 0, 1]], dtype=np.float)
     shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
-    cv2.imwrite("output/imTransB2.jpg", shifted1)
+    cv2.imwrite("input/imTransB2.jpg", shifted1)
     print("Translation Correlation")
     mat = findTranslationCorr(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
@@ -182,7 +182,7 @@ def rigidLK(img):
         [0, 0, 1]
     ])
     shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
-    cv2.imwrite("output/imRigidA2.jpg", shifted1)
+    cv2.imwrite("input/imRigidA2.jpg", shifted1)
     print("Rigid Lk")
     mat = findRigidLK(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
