@@ -33,7 +33,6 @@ def lkDemo(img_path):
     print(np.mean(uv, 0))
 
     displayOpticalFlow(img_2, pts, uv)
-    return pts, uv
 
 
 def hierarchicalkDemo(img_path):
@@ -56,7 +55,6 @@ def hierarchicalkDemo(img_path):
     print("Time: {:.4f}".format(et - st))
 
     displayOpticalFlowh(img_1, pts, uv)
-    return uv, pts
 
 
 def lkDemot(img_path, t):
@@ -65,7 +63,6 @@ def lkDemot(img_path, t):
     img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
     pts, uv = opticalFlow(img_1.astype(np.float), img_2.astype(np.float), step_size=20, win_size=5)
     displayOpticalFlow(img_2, pts, uv)
-    return pts, uv
 
 
 def hierarchicalkDemot(img_path, t):
@@ -74,7 +71,6 @@ def hierarchicalkDemot(img_path, t):
     img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
     uv, pts = opticalFlowPyrLK(img_1.astype(np.float), img_2.astype(np.float), 4, stepSize=20, winSize=5)
     displayOpticalFlowh(img_1, pts, uv)
-    return uv, pts
 
 
 def compareLK(img_path):
@@ -91,8 +87,8 @@ def compareLK(img_path):
     lkDemot(img_path, t)
     hierarchicalkDemot(img_path, t)
 
-    lk = 'lucas-kanade.png'
-    lkh = 'hierarchical lucas-kanade.png'
+    lk = 'output/lucas-kanade.png'
+    lkh = 'output/hierarchical lucas-kanade.png'
 
     lk = cv2.cvtColor(cv2.imread(lk), cv2.COLOR_BGR2RGB)
     lk = cv2.resize(lk, (0, 0), fx=.5, fy=0.5)
@@ -137,6 +133,7 @@ def transLK(img):
                   [0, 1, t_y],
                   [0, 0, 1]], dtype=np.float)
     shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
+    cv2.imwrite('output/imTransA2.jpg', shifted1)
     print("Translation LK")
     mat = findTranslationLK(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
@@ -159,6 +156,7 @@ def transCorr(img):
                   [0, 1, t_y],
                   [0, 0, 1]], dtype=np.float)
     shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
+    cv2.imwrite("output/imTransB2.jpg", shifted1)
     print("Translation Correlation")
     mat = findTranslationCorr(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
@@ -184,6 +182,7 @@ def rigidLK(img):
         [0, 0, 1]
     ])
     shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
+    cv2.imwrite("output/imRigidA2.jpg", shifted1)
     print("Rigid Lk")
     mat = findRigidLK(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
@@ -209,6 +208,7 @@ def rigidCorr(img):
         [0, 0, 1]
     ])
     shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
+    cv2.imwrite("imRigidB2.jpg", shifted1)
     print("Rigid Correlation")
     mat = findRigidCorr(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
@@ -245,6 +245,7 @@ def warpImage(img):
     ax[1].imshow(im2_mine)
     plt.show()
 
+    # second test
     theta = 30
     T = np.float32([
         [np.cos(np.radians(theta)), -np.sin(np.radians(theta)), 30],
@@ -266,26 +267,37 @@ def warpImage(img):
     plt.show()
 
 
-def imageWarpingDemo(img_path):
+def imageWarpingDemo():
     """
     ADD TEST
-    :param img_path: Image input
     :return:
     """
     print("Image Warping Demo")
-    img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
-    img = cv2.resize(img, (0, 0), fx=.5, fy=.5)
+    img_path = 'input/imTransA1.jpg'
+    img1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    img1 = cv2.resize(img1, (0, 0), fx=.5, fy=.5)
 
+    img_path = 'input/imTransB1.jpg'
+    img2 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    img2 = cv2.resize(img2, (0, 0), fx=.5, fy=.5)
 
-    transLK(img)
+    img_path = 'input/imRigidA1.jpg'
+    img3 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    img3 = cv2.resize(img3, (0, 0), fx=.5, fy=.5)
+
+    img_path = 'input/imRigidB1.jpg'
+    img4 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    img4 = cv2.resize(img4, (0, 0), fx=.5, fy=.5)
+
+    transLK(img1)
     print("\n")
-    transCorr(img)
+    transCorr(img2)
     print("\n")
-    rigidLK(img)
+    rigidLK(img3)
     print("\n")
-    rigidCorr(img)
+    rigidCorr(img4)
     print("\n")
-    warpImage(img)
+    warpImage(img2)
 
 
 # ---------------------------------------------------------------------------
@@ -354,33 +366,33 @@ def blendDemo():
 
     plt.show()
 
-    cv2.imwrite('sunset_cat.png', cv2.cvtColor((im_blend * 255).astype(np.uint8), cv2.COLOR_RGB2BGR))
+    cv2.imwrite('output/sunset_cat.png', cv2.cvtColor((im_blend * 255).astype(np.uint8), cv2.COLOR_RGB2BGR))
 
 
 def main():
     print("ID:", myID())
 
     img_path = 'input/boxMan.jpg'
-    lkDemo(img_path)
+    # lkDemo(img_path)
+    # print("\n")
+    #
+    # hierarchicalkDemo(img_path)
+    # print("\n")
+    #
+    # compareLK(img_path)
+    # print("\n")
+
+    imageWarpingDemo()
     print("\n")
 
-    hierarchicalkDemo(img_path)
-    print("\n")
-
-    compareLK(img_path)
-    print("\n")
-
-    imageWarpingDemo(img_path)
-    print("\n")
-
-    pyrGaussianDemo('input/pyr_bit.jpg')
-    print("\n")
-
-    pyrLaplacianDemo('input/pyr_bit.jpg')
-    print("\n")
-
-    blendDemo()
-    print("\n")
+    # pyrGaussianDemo('input/pyr_bit.jpg')
+    # print("\n")
+    #
+    # pyrLaplacianDemo('input/pyr_bit.jpg')
+    # print("\n")
+    #
+    # blendDemo()
+    # print("\n")
 
 
 if __name__ == '__main__':

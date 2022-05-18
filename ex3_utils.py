@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 from numpy.linalg import LinAlgError
 
-
+# TODO fix correlation
 def myID() -> np.int:
     """
     Return my ID (not the friend's ID I copied from)
