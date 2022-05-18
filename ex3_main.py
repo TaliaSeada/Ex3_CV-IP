@@ -23,7 +23,7 @@ def lkDemo(img_path):
     t = np.array([[1, 0, -.2],
                   [0, 1, -.1],
                   [0, 0, 1]], dtype=np.float)
-    img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
+    img_2 = cv2.warpPerspective(img_1, t, (img_1.shape[1], img_1.shape[0]))
     st = time.time()
     pts, uv = opticalFlow(img_1.astype(np.float), img_2.astype(np.float), step_size=20, win_size=5)
     et = time.time()
@@ -43,11 +43,12 @@ def hierarchicalkDemo(img_path):
     """
     print("hierarchical Demo")
     img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
     img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
     t = np.array([[1, 0, 3],
                   [0, 1, -5],
                   [0, 0, 1]], dtype=np.float)
-    img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
+    img_2 = cv2.warpPerspective(img_1, t, (img_1.shape[1], img_1.shape[0]))
 
     st = time.time()
     uv, pts = opticalFlowPyrLK(img_1.astype(np.float), img_2.astype(np.float), 4, stepSize=20, winSize=5)
@@ -60,7 +61,7 @@ def hierarchicalkDemo(img_path):
 def lkDemot(img_path, t):
     img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
     img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
-    img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
+    img_2 = cv2.warpPerspective(img_1, t, (img_1.shape[1], img_1.shape[0]))
     pts, uv = opticalFlow(img_1.astype(np.float), img_2.astype(np.float), step_size=20, win_size=5)
     displayOpticalFlow(img_2, pts, uv)
 
@@ -68,7 +69,7 @@ def lkDemot(img_path, t):
 def hierarchicalkDemot(img_path, t):
     img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
     img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
-    img_2 = cv2.warpPerspective(img_1, t, img_1.shape[::-1])
+    img_2 = cv2.warpPerspective(img_1, t, (img_1.shape[1], img_1.shape[0]))
     uv, pts = opticalFlowPyrLK(img_1.astype(np.float), img_2.astype(np.float), 4, stepSize=20, winSize=5)
     displayOpticalFlowh(img_1, pts, uv)
 
@@ -132,11 +133,11 @@ def transLK(img):
     t = np.array([[1, 0, t_x],
                   [0, 1, t_y],
                   [0, 0, 1]], dtype=np.float)
-    shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
+    shifted1 = cv2.warpPerspective(img, t, (img.shape[1], img.shape[0]))
     cv2.imwrite('input/imTransA2.jpg', shifted1)
     print("Translation LK")
     mat = findTranslationLK(img, shifted1)
-    shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
+    shifted2 = cv2.warpPerspective(img, mat, (img.shape[1], img.shape[0]))
     print("MSE:", MSE(shifted1, shifted2))
     print(mat)
 
@@ -155,11 +156,11 @@ def transCorr(img):
     t = np.array([[1, 0, t_x],
                   [0, 1, t_y],
                   [0, 0, 1]], dtype=np.float)
-    shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
+    shifted1 = cv2.warpPerspective(img, t, (img.shape[1], img.shape[0]))
     cv2.imwrite("input/imTransB2.jpg", shifted1)
     print("Translation Correlation")
     mat = findTranslationCorr(img, shifted1)
-    shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
+    shifted2 = cv2.warpPerspective(img, mat,  (img.shape[1], img.shape[0]))
     print("MSE:", MSE(shifted1, shifted2))
     print(mat)
 
@@ -181,11 +182,11 @@ def rigidLK(img):
         [np.sin(np.radians(theta)), np.cos(np.radians(theta)), t_y],
         [0, 0, 1]
     ])
-    shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
+    shifted1 = cv2.warpPerspective(img, t, (img.shape[1], img.shape[0]))
     cv2.imwrite("input/imRigidA2.jpg", shifted1)
     print("Rigid Lk")
     mat = findRigidLK(img, shifted1)
-    shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
+    shifted2 = cv2.warpPerspective(img, mat, (img.shape[1], img.shape[0]))
     print("MSE:", MSE(shifted1, shifted2))
     print(mat)
 
@@ -207,11 +208,11 @@ def rigidCorr(img):
         [np.sin(np.radians(theta)), np.cos(np.radians(theta)), t_y],
         [0, 0, 1]
     ])
-    shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
+    shifted1 = cv2.warpPerspective(img, t, (img.shape[1], img.shape[0]))
     cv2.imwrite("input/imRigidB2.jpg", shifted1)
     print("Rigid Correlation")
     mat = findRigidCorr(img, shifted1)
-    shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
+    shifted2 = cv2.warpPerspective(img, mat, (img.shape[1], img.shape[0]))
     print("MSE:", MSE(shifted1, shifted2))
     print(mat)
 
@@ -230,7 +231,7 @@ def warpImage(img):
                   [0, 1, -40.7],
                   [0, 0, 1]], dtype=np.float)
 
-    im2 = cv2.warpPerspective(img, T, img.shape[::-1])
+    im2 = cv2.warpPerspective(img, T, (img.shape[1], img.shape[0]))
     im2_mine = warpImages(img, im2, T)
 
     print("MSE between my function and OpenCV function: ")
@@ -252,7 +253,7 @@ def warpImage(img):
         [np.sin(np.radians(theta)), np.cos(np.radians(theta)), -40],
         [0, 0, 1]
     ])
-    im2 = cv2.warpPerspective(img, T, img.shape[::-1])
+    im2 = cv2.warpPerspective(img, T, (img.shape[1], img.shape[0]))
     im2_mine = warpImages(img, im2, T)
 
     print("MSE between my function and OpenCV function: ")
@@ -275,18 +276,22 @@ def imageWarpingDemo():
     print("Image Warping Demo")
     img_path = 'input/imTransA1.jpg'
     img1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    img1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
     img1 = cv2.resize(img1, (0, 0), fx=.5, fy=.5)
 
     img_path = 'input/imTransB1.jpg'
     img2 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    # img2 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
     img2 = cv2.resize(img2, (0, 0), fx=.5, fy=.5)
 
     img_path = 'input/imRigidA1.jpg'
     img3 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    img3 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
     img3 = cv2.resize(img3, (0, 0), fx=.5, fy=.5)
 
     img_path = 'input/imRigidB1.jpg'
     img4 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    # img4 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
     img4 = cv2.resize(img4, (0, 0), fx=.5, fy=.5)
 
     transLK(img1)
