@@ -1,8 +1,9 @@
 from typing import List
-
+import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 from numpy.linalg import LinAlgError
+
 
 # TODO fix correlation
 def myID() -> np.int:
@@ -301,8 +302,20 @@ def findRigidCorr(im1: np.ndarray, im2: np.ndarray) -> np.ndarray:
     y, x = np.unravel_index(np.argmax(corr), corr.shape)
     y2, x2 = np.array(rotate.shape) // 2
 
+    # fig, (ax_img1, ax_img2, ax_corr) = plt.subplots(1, 3, figsize=(15, 5))
+    # im = ax_img1.imshow(im1, cmap='gray')
+    # ax_img1.set_title('img1')
+    # ax_img2.imshow(rotate, cmap='gray')
+    # ax_img2.set_title('img2')
+    # im = ax_corr.imshow(corr, cmap='viridis')
+    # ax_corr.set_title('Cross-correlation')
+    # ax_img1.plot(x, y, 'ro')
+    # ax_img2.plot(x2, y2, 'go')
+    # ax_corr.plot(x, y, 'ro')
+    # fig.show()
+
     # take the differance of each to get the tx and ty
-    t_x = x2 - x - 1
+    t_x = (x2 - x - 1)*2
     t_y = y2 - y - 1
 
     mat = np.float32([

@@ -199,7 +199,7 @@ def rigidLK(img):
 
 
 def rigidCorr(img):
-    theta = 20
+    theta = 10
     t_x = -6
     t_y = 11
     t = np.float32([
@@ -208,7 +208,7 @@ def rigidCorr(img):
         [0, 0, 1]
     ])
     shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
-    cv2.imwrite("imRigidB2.jpg", shifted1)
+    cv2.imwrite("output/imRigidB2.jpg", shifted1)
     print("Rigid Correlation")
     mat = findRigidCorr(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
@@ -373,26 +373,26 @@ def main():
     print("ID:", myID())
 
     img_path = 'input/boxMan.jpg'
-    # lkDemo(img_path)
-    # print("\n")
-    #
-    # hierarchicalkDemo(img_path)
-    # print("\n")
-    #
-    # compareLK(img_path)
-    # print("\n")
+    lkDemo(img_path)
+    print("\n")
+
+    hierarchicalkDemo(img_path)
+    print("\n")
+
+    compareLK(img_path)
+    print("\n")
 
     imageWarpingDemo()
     print("\n")
 
-    # pyrGaussianDemo('input/pyr_bit.jpg')
-    # print("\n")
-    #
-    # pyrLaplacianDemo('input/pyr_bit.jpg')
-    # print("\n")
-    #
-    # blendDemo()
-    # print("\n")
+    pyrGaussianDemo('input/pyr_bit.jpg')
+    print("\n")
+
+    pyrLaplacianDemo('input/pyr_bit.jpg')
+    print("\n")
+
+    blendDemo()
+    print("\n")
 
 
 if __name__ == '__main__':
