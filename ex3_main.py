@@ -361,26 +361,26 @@ def main():
     print("ID:", myID())
 
     img_path = 'input/boxMan.jpg'
-    # lkDemo(img_path)
-    # print("\n")
-    #
+    lkDemo(img_path)
+    print("\n")
+
     hierarchicalkDemo(img_path)
     print("\n")
 
-    # compareLK(img_path)
-    # print("\n")
-    #
-    # imageWarpingDemo(img_path)
-    # print("\n")
-    #
-    # pyrGaussianDemo('input/pyr_bit.jpg')
-    # print("\n")
-    #
-    # pyrLaplacianDemo('input/pyr_bit.jpg')
-    # print("\n")
-    #
-    # blendDemo()
-    # print("\n")
+    compareLK(img_path)
+    print("\n")
+
+    imageWarpingDemo(img_path)
+    print("\n")
+
+    pyrGaussianDemo('input/pyr_bit.jpg')
+    print("\n")
+
+    pyrLaplacianDemo('input/pyr_bit.jpg')
+    print("\n")
+
+    blendDemo()
+    print("\n")
 
 
 if __name__ == '__main__':
