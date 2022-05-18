@@ -134,7 +134,7 @@ def transLK(img):
                   [0, 1, t_y],
                   [0, 0, 1]], dtype=np.float)
     shifted1 = cv2.warpPerspective(img, t, (img.shape[1], img.shape[0]))
-    cv2.imwrite('input/imTransA2.jpg',  cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+    cv2.imwrite('input/imTransA2.jpg',  cv2.cvtColor(shifted1, cv2.COLOR_RGB2BGR))
     print("Translation LK")
     mat = findTranslationLK(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, (img.shape[1], img.shape[0]))
@@ -157,7 +157,7 @@ def transCorr(img):
                   [0, 1, t_y],
                   [0, 0, 1]], dtype=np.float)
     shifted1 = cv2.warpPerspective(img, t, (img.shape[1], img.shape[0]))
-    cv2.imwrite("input/imTransB2.jpg", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+    cv2.imwrite("input/imTransB2.jpg", cv2.cvtColor(shifted1, cv2.COLOR_RGB2BGR))
     print("Translation Correlation")
     mat = findTranslationCorr(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat,  (img.shape[1], img.shape[0]))
@@ -183,7 +183,7 @@ def rigidLK(img):
         [0, 0, 1]
     ])
     shifted1 = cv2.warpPerspective(img, t, (img.shape[1], img.shape[0]))
-    cv2.imwrite("input/imRigidA2.jpg",  cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+    cv2.imwrite("input/imRigidA2.jpg",  cv2.cvtColor(shifted1, cv2.COLOR_RGB2BGR))
     print("Rigid Lk")
     mat = findRigidLK(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, (img.shape[1], img.shape[0]))
@@ -209,7 +209,7 @@ def rigidCorr(img):
         [0, 0, 1]
     ])
     shifted1 = cv2.warpPerspective(img, t, (img.shape[1], img.shape[0]))
-    cv2.imwrite("input/imRigidB2.jpg",  cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+    cv2.imwrite("input/imRigidB2.jpg",  cv2.cvtColor(shifted1, cv2.COLOR_RGB2BGR))
     print("Rigid Correlation")
     mat = findRigidCorr(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, (img.shape[1], img.shape[0]))
