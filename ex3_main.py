@@ -208,7 +208,7 @@ def rigidCorr(img):
         [0, 0, 1]
     ])
     shifted1 = cv2.warpPerspective(img, t, img.shape[::-1])
-    cv2.imwrite("output/imRigidB2.jpg", shifted1)
+    cv2.imwrite("input/imRigidB2.jpg", shifted1)
     print("Rigid Correlation")
     mat = findRigidCorr(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, img.shape[::-1])
