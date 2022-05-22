@@ -99,6 +99,7 @@ def compareLK(img_path):
     lkh = cv2.resize(lkh, (0, 0), fx=.5, fy=0.5)
 
     f, ax = plt.subplots(1, 2)
+    f.suptitle('Compare LK & Hierarchical LK')
     plt.gray()
     ax[0].set_title("lucas-kanade")
     ax[1].set_title("hierarchical lucas-kanade")
@@ -112,13 +113,14 @@ def displayOpticalFlow(img: np.ndarray, pts: np.ndarray, uvs: np.ndarray):
     plt.quiver(pts[:, 0], pts[:, 1], uvs[:, 0], uvs[:, 1], color='r')
 
     plt.savefig("lucas-kanade")
+    plt.suptitle('Optical Flow')
     plt.show()
 
 
 def displayOpticalFlowh(img: np.ndarray, pts: np.ndarray, uvs: np.ndarray):
     plt.imshow(img, cmap='gray')
     plt.quiver(pts[:, 0], pts[:, 1], uvs[:, 0], uvs[:, 1], color='r')
-
+    plt.suptitle('Hierarchical Optical Flow')
     plt.savefig("hierarchical lucas-kanade")
     plt.show()
 
@@ -144,6 +146,7 @@ def transLK(img):
 
     plt.gray()
     f, ax = plt.subplots(1, 2)
+    f.suptitle('Translation LK')
     ax[0].set_title("translation with given")
     ax[1].set_title("translation with mine")
     ax[0].imshow(shifted1)
@@ -167,6 +170,7 @@ def transCorr(img):
 
     plt.gray()
     f, ax = plt.subplots(1, 2)
+    f.suptitle('Translation Correlation')
     ax[0].set_title("translation with given")
     ax[1].set_title("translation with mine")
     ax[0].imshow(shifted1)
@@ -193,6 +197,7 @@ def rigidLK(img):
 
     plt.gray()
     f, ax = plt.subplots(1, 2)
+    f.suptitle('Rigid LK')
     ax[0].set_title("rigid with given")
     ax[1].set_title("rigid with mine")
     ax[0].imshow(shifted1)
@@ -219,6 +224,7 @@ def rigidCorr(img):
 
     plt.gray()
     f, ax = plt.subplots(1, 2)
+    f.suptitle('Rigid Correlation')
     ax[0].set_title("rigid with given")
     ax[1].set_title("rigid with mine")
     ax[0].imshow(shifted1)
@@ -240,9 +246,9 @@ def warpImage(img):
 
     plt.gray()
     f, ax = plt.subplots(1, 2)
-
-    ax[0].set_title("given image - translation")
-    ax[1].set_title("my image - translation")
+    f.suptitle('Warp Images - Translation')
+    ax[0].set_title("given image")
+    ax[1].set_title("my image")
     ax[0].imshow(img)
     ax[1].imshow(im2_mine)
     plt.show()
@@ -262,8 +268,9 @@ def warpImage(img):
 
     plt.gray()
     f, ax = plt.subplots(1, 2)
-    ax[0].set_title("given image - rigid")
-    ax[1].set_title("my image - rigid")
+    f.suptitle('Warp Images - Rigid')
+    ax[0].set_title("given image")
+    ax[1].set_title("my image")
     ax[0].imshow(img)
     ax[1].imshow(im2_mine)
     plt.show()
@@ -329,6 +336,7 @@ def pyrGaussianDemo(img_path):
         h = gau_pyr[lv_idx].shape[0]
         canvas[:h, widths[lv_idx]:widths[lv_idx + 1], :] = gau_pyr[lv_idx]
 
+    plt.suptitle('Gaussian Pyramid Demo')
     plt.imshow(canvas)
     plt.show()
 
@@ -344,6 +352,7 @@ def pyrLaplacianDemo(img_path):
     re_lap = laplaceianExpand(lap_pyr)
 
     f, ax = plt.subplots(2, lvls + 1)
+    f.suptitle('Laplacian Pyramid Demo')
     plt.gray()
     for i in range(lvls):
         ax[0, i].imshow(lap_pyr[i])
@@ -363,6 +372,7 @@ def blendDemo():
     n_blend, im_blend = pyrBlend(im1, im2, mask, 4)
 
     f, ax = plt.subplots(2, 3)
+    f.suptitle('Blend Demo')
     ax[0, 0].imshow(im1)
     ax[0, 1].imshow(im2)
     ax[0, 2].imshow(mask)
