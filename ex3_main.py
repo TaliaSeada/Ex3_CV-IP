@@ -111,9 +111,8 @@ def compareLK(img_path):
 def displayOpticalFlow(img: np.ndarray, pts: np.ndarray, uvs: np.ndarray):
     plt.imshow(img, cmap='gray')
     plt.quiver(pts[:, 0], pts[:, 1], uvs[:, 0], uvs[:, 1], color='r')
-
-    plt.savefig("lucas-kanade")
     plt.suptitle('Optical Flow')
+    plt.savefig("output/lucas-kanade")
     plt.show()
 
 
@@ -121,7 +120,7 @@ def displayOpticalFlowh(img: np.ndarray, pts: np.ndarray, uvs: np.ndarray):
     plt.imshow(img, cmap='gray')
     plt.quiver(pts[:, 0], pts[:, 1], uvs[:, 0], uvs[:, 1], color='r')
     plt.suptitle('Hierarchical Optical Flow')
-    plt.savefig("hierarchical lucas-kanade")
+    plt.savefig("output/hierarchical lucas-kanade")
     plt.show()
 
 
