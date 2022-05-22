@@ -52,10 +52,11 @@ def hierarchicalkDemo(img_path):
     img_2 = cv2.warpPerspective(img_1, t, (img_1.shape[1], img_1.shape[0]))
 
     st = time.time()
-    uv, pts = opticalFlowPyrLK(img_1.astype(np.float), img_2.astype(np.float), 4, stepSize=20, winSize=5)
+    result = opticalFlowPyrLK(img_1.astype(np.float), img_2.astype(np.float), 4, stepSize=20, winSize=5)
     et = time.time()
     print("Time: {:.4f}".format(et - st))
 
+    uv, pts = opticalFlowPyrLK_display(img_1.astype(np.float), img_2.astype(np.float), 4, stepSize=20, winSize=5)
     displayOpticalFlowh(img_1, pts, uv)
 
 
@@ -71,7 +72,7 @@ def hierarchicalkDemot(img_path, t):
     img_1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
     img_1 = cv2.resize(img_1, (0, 0), fx=.5, fy=0.5)
     img_2 = cv2.warpPerspective(img_1, t, (img_1.shape[1], img_1.shape[0]))
-    uv, pts = opticalFlowPyrLK(img_1.astype(np.float), img_2.astype(np.float), 4, stepSize=20, winSize=5)
+    uv, pts = opticalFlowPyrLK_display(img_1.astype(np.float), img_2.astype(np.float), 4, stepSize=20, winSize=5)
     displayOpticalFlowh(img_1, pts, uv)
 
 

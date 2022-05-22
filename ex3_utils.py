@@ -127,6 +127,49 @@ def opticalFlowPyrLK(img1: np.ndarray, img2: np.ndarray, k: int,
             else:
                 vectors[points.index(points_i[t])] += vectors_i[t]
 
+    return np.array((np.array(vectors), np.array(points), 2))
+
+
+def opticalFlowPyrLK_display(img1: np.ndarray, img2: np.ndarray, k: int,
+                     stepSize: int, winSize: int):
+    """
+    same as opticalFlowPyrLK but returns the points and the vectors
+    in order to display the results
+    """
+    # create pyramids for both images
+    im1_pyrs = gaussianPyr(img1, k)
+    im1_pyrs.reverse()
+    im2_pyrs = gaussianPyr(img2, k)
+    im2_pyrs.reverse()
+
+    # use the LK algorithm on the smallest image
+    points, vectors = opticalFlow(im1_pyrs[0], im2_pyrs[0], step_size=stepSize, win_size=winSize)
+    points = list(points)
+    vectors = list(vectors)
+
+    # multiply the points and vectors by two in order to "expand" the image
+    for i in range(1, len(im2_pyrs)):
+        for j in range(len(points)):
+            for k in range(len(points[j])):
+                points[j][k] *= 2
+            for k in range(len(vectors[j])):
+                vectors[j][k] *= 2
+
+        # for each image calculate the optical flow
+        points_i, vectors_i = opticalFlow(im1_pyrs[i], im2_pyrs[i], step_size=stepSize, win_size=winSize)
+        points_i = list(points_i)
+        vectors_i = list(vectors_i)
+
+        # update the points and vectors
+        for t in range(len(points_i)):
+            # if the point does not exist, create it
+            if not check(list(points_i[t]), points):
+                points.append(points_i[t])
+                vectors.append(vectors_i[t])
+            # else just add the previous to the current vector
+            else:
+                vectors[points.index(points_i[t])] += vectors_i[t]
+
     return np.array(vectors), np.array(points)
 
 # ---------------------------------------------------------------------------
