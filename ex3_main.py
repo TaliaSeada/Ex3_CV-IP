@@ -137,7 +137,7 @@ def transLK(img):
                   [0, 1, t_y],
                   [0, 0, 1]], dtype=np.float)
     shifted1 = cv2.warpPerspective(img, t, (img.shape[1], img.shape[0]))
-    cv2.imwrite('input/imTransA2.jpg',  cv2.cvtColor(shifted1, cv2.COLOR_RGB2BGR))
+    cv2.imwrite('input/imTransB1.jpg',  cv2.cvtColor(shifted1, cv2.COLOR_RGB2BGR))
     print("Translation LK")
     mat = findTranslationLK(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, (img.shape[1], img.shape[0]))
@@ -188,7 +188,7 @@ def rigidLK(img):
         [0, 0, 1]
     ])
     shifted1 = cv2.warpPerspective(img, t, (img.shape[1], img.shape[0]))
-    cv2.imwrite("input/imRigidA2.jpg",  cv2.cvtColor(shifted1, cv2.COLOR_RGB2BGR))
+    cv2.imwrite("input/imRigidB1.jpg",  cv2.cvtColor(shifted1, cv2.COLOR_RGB2BGR))
     print("Rigid Lk")
     mat = findRigidLK(img, shifted1)
     shifted2 = cv2.warpPerspective(img, mat, (img.shape[1], img.shape[0]))
@@ -287,17 +287,17 @@ def imageWarpingDemo():
     img1 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
     img1 = cv2.resize(img1, (0, 0), fx=.5, fy=.5)
 
-    img_path = 'input/imTransB1.jpg'
+    img_path = 'input/imTransA2.jpg'
     img2 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
     # img2 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
     img2 = cv2.resize(img2, (0, 0), fx=.5, fy=.5)
 
     img_path = 'input/imRigidA1.jpg'
     img3 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
-    img3 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
+    # img3 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
     img3 = cv2.resize(img3, (0, 0), fx=.5, fy=.5)
 
-    img_path = 'input/imRigidB1.jpg'
+    img_path = 'input/imRigidA2.jpg'
     img4 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
     # img4 = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
     img4 = cv2.resize(img4, (0, 0), fx=.5, fy=.5)
